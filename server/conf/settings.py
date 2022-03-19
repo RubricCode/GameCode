@@ -79,20 +79,20 @@ DEFAULT_CHANNELS = [
         "desc": "Out of Character Admin discussion",
         "locks": "control:perm(Admin);listen:all();send:all()",
     },
-	# newbie question channel
+    # newbie question channel
     {
-		"key": "Question",
-		"aliases": 'question',
-		"desc": "OOC Channel for New player questions",
-		"locks": "control:perm(Admin);listen:all();send:all()",
-	},
+        "key": "Question",
+        "aliases": 'question',
+        "desc": "OOC Channel for New player questions",
+        "locks": "control:perm(Admin);listen:all();send:all()",
+    },
     # OOC chat channel
-	{
-		"key": "Chat",
-		"aliases": 'chat',
-		"desc": "OOC chat channel",
-		"locks": "control:perm(Admin);listen:all();send:all()",
-	},
+    {
+        "key": "Chat",
+        "aliases": 'chat',
+        "desc": "OOC chat channel",
+        "locks": "control:perm(Admin);listen:all();send:all()",
+    },
 ]
 # Optional channel info (same form as CHANNEL_MUDINFO) for the channel to
 # receive connection messages ("<account> has (dis)connected").  While the

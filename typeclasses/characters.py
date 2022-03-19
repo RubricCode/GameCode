@@ -48,7 +48,7 @@ traits = {
     'LVL': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Level'},
     'XP': {'type': 'counter', 'base': 0, 'mod': 0, 'name': 'Experience',
            'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
-    }
+}
 
 wield_slots = ['wield1', 'wield2']
 armor_slots = ['helm', 'necklace', 'cloak', 'torso',
@@ -113,12 +113,12 @@ class Character(GenderCharacter):
             "object": self,
             "exit": exits[0] if exits else "somwhere",
             "origin": location or "nowhere",
-            "destination": destination or "nowhere",})
+            "destination": destination or "nowhere", })
 
         location.msg_contents(string, exclude=(self,), mapping=mapping)
 
     def announce_move_to(self, source_location, msg=None, mapping=None):
-         """
+        """
          Called after the move if the move was not quiet. At this point
          we are standing in the new location.
 
@@ -137,38 +137,38 @@ class Character(GenderCharacter):
 
          """
 
-         if not source_location and self.location.has_account:
-             # This was created from nowhere and added to an account's
-             # inventory; it's probably the result of a create command.
-             string = "You now have %s in your possession." % self.get_display_name(self.location)
-             self.location.msg(string)
-             return
+        if not source_location and self.location.has_account:
+            # This was created from nowhere and added to an account's
+            # inventory; it's probably the result of a create command.
+            string = "You now have %s in your possession." % self.get_display_name(self.location)
+            self.location.msg(string)
+            return
 
-         if source_location:
-             if msg:
-                 string = msg
-             else:
-                 string = "{object} arrives from the {exit}."
-         else:
-             string = "{object} arrives to {destination}."
+        if source_location:
+            if msg:
+                string = msg
+            else:
+                string = "{object} arrives from the {exit}."
+        else:
+            string = "{object} arrives to {destination}."
 
-         origin = source_location
-         destination = self.location
-         exits = []
-         if origin:
-             exits = [o for o in destination.contents if o.location is destination and o.destination is origin]
+        origin = source_location
+        destination = self.location
+        exits = []
+        if origin:
+            exits = [o for o in destination.contents if o.location is destination and o.destination is origin]
 
-         if not mapping:
+        if not mapping:
             mapping = {}
 
-         mapping.update({
-             "object": self,
-             "exit": exits[0] if exits else "somewhere",
-             "origin": origin or "nowhere",
-             "destination": destination or "nowhere",
-         })
+        mapping.update({
+            "object": self,
+            "exit": exits[0] if exits else "somewhere",
+            "origin": origin or "nowhere",
+            "destination": destination or "nowhere",
+        })
 
-         destination.msg_contents(string, exclude=(self,), mapping=mapping)
+        destination.msg_contents(string, exclude=(self,), mapping=mapping)
 
     def at_object_creation(self):
         super(Character, self).at_object_creation()
@@ -183,7 +183,7 @@ class Character(GenderCharacter):
         self.db.faith = ""
         self.db.devotion = ""
         self.db.desc = "A small wisp of energy lacking in any discernible features, all that is missing is the " \
-                        "spark of creation."
+                       "spark of creation."
         self.db.smellable_text = "You don't smell anything special."
         self.db.feelable_text = "You don't feel anything special."
         self.db.tasteable_text = "You don't taste anything special."
@@ -194,13 +194,13 @@ class Character(GenderCharacter):
         self.db.descSet = False
         self.db.backSet = False
         self.db.statSet = False
-        #self.db.is_in_combat = False
-        #self.db.is_immobile = False
+        # self.db.is_in_combat = False
+        # self.db.is_immobile = False
 
         for key, kwargs in traits.items():
             self.traits.add(key, **kwargs)
 
-		update_secondary()
+        update_secondary()
 
         self.traits.HP.mod = abilitymodifiers[self.traits.CON.actual - 1]
         self.traits.SP.mod = abilitymodifiers[self.traits.INT.actual - 1] + abilitymodifiers[self.traits.WIS.actual - 1]
@@ -218,13 +218,13 @@ class Character(GenderCharacter):
         self.traits.STR.lift_factor = 20
         self.traits.STR.push_factor = 40
         self.traits.ENC.max = self.traits.STR.lift_factor * self.traits.STR.actual
-        tickerhandler.add(interval=randint(10,15), callback=self.at_regen, persistent=True)
+        tickerhandler.add(interval=randint(10, 15), callback=self.at_regen, persistent=True)
 
     def at_post_puppet(self):
         self.location.msg_contents("%s has connected" % self.key)
         loginmsg = "[************--World Crier--************]|/" \
-                    "     %s arrives in Ayacia.|/" \
-                    "[***************************************]|/" % self.key
+                   "     %s arrives in Ayacia.|/" \
+                   "[***************************************]|/" % self.key
         SESSIONS.announce_all(loginmsg)
         tickerhandler.add(interval=randint(10, 15), callback=self.at_regen, persistent=True)
         self.execute_cmd("look")
@@ -234,7 +234,7 @@ class Character(GenderCharacter):
         return TraitHandler(self)
 
     @lazy_property
-    def skills(self,):
+    def skills(self, ):
         return TraitHandler(self, db_attribute='skills')
 
     @lazy_property
@@ -266,9 +266,12 @@ class Character(GenderCharacter):
         Wielding: {wielding}
         Armors: {armor}
         Clothing: {clothing}""".format(
-            wielding="\n\t  ".join([self.equip.get(slot).get_display_name(looker) for slot in wield_slots if self.equip.get(slot)]),
-            armor="\n\t  ".join([self.equip.get(slot).get_display_name(looker) for slot in armor_slots if self.equip.get(slot)]),
-            clothing="\n\t  ".join([self.equip.get(slot).get_display_name(looker) for slot in clothing_slots if self.equip.get(slot)]))
+            wielding="\n\t  ".join(
+                [self.equip.get(slot).get_display_name(looker) for slot in wield_slots if self.equip.get(slot)]),
+            armor="\n\t  ".join(
+                [self.equip.get(slot).get_display_name(looker) for slot in armor_slots if self.equip.get(slot)]),
+            clothing="\n\t  ".join(
+                [self.equip.get(slot).get_display_name(looker) for slot in clothing_slots if self.equip.get(slot)]))
         looker.msg(equip_message)
 
     def at_object_receive(self, obj, source):
@@ -287,7 +290,7 @@ class Character(GenderCharacter):
             self.traits.EP.mod = \
                 int(+(self.traits.ENC.actual // (2 * self.traits.STR.actual)))
 
-	def update_secondary(self):
+    def update_secondary(self):
         self.traits.HP.mod = abilitymodifiers[self.traits.CON.actual - 1]
         self.traits.SP.mod = abilitymodifiers[self.traits.INT.actual - 1] + abilitymodifiers[self.traits.WIS.actual - 1]
         self.traits.FORT.mod = abilitymodifiers[self.traits.CON.actual - 1]
@@ -305,6 +308,7 @@ class Character(GenderCharacter):
         self.traits.STR.push_factor = 40
         self.traits.ENC.max = self.traits.STR.lift_factor * self.traits.STR.actual
 
+
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
        """
@@ -321,4 +325,4 @@ class NPC(Character):
         for key, kwargs in npc.traits.items():
             self.traits.add(key, **kwargs)
 
-		update_secondary()
+        update_secondary()
