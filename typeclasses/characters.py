@@ -200,8 +200,6 @@ class Character(GenderCharacter):
         for key, kwargs in traits.items():
             self.traits.add(key, **kwargs)
 
-        update_secondary()
-
         self.traits.HP.mod = abilitymodifiers[self.traits.CON.actual - 1]
         self.traits.SP.mod = abilitymodifiers[self.traits.INT.actual - 1] + abilitymodifiers[self.traits.WIS.actual - 1]
         self.traits.FORT.mod = abilitymodifiers[self.traits.CON.actual - 1]
@@ -218,6 +216,35 @@ class Character(GenderCharacter):
         self.traits.STR.lift_factor = 20
         self.traits.STR.push_factor = 40
         self.traits.ENC.max = self.traits.STR.lift_factor * self.traits.STR.actual
+
+        self.db.slots = {
+            # armor slots
+            'wield1': None,
+            'wield2': None,
+            'helm': None,
+            'necklace': None,
+            'cloak': None,
+            'torso': None,
+            'belt': None,
+            'bracers': None,
+            'gloves': None,
+            'ring1': None,
+            'ring2': None,
+            'boots': None,
+            # clothing slots
+            'hat': None,
+            'accessory': None,
+            'overtop': None,
+            'top': None,
+            'bottom': None,
+            'belt2': None,
+            'accessory2': None,
+            'gloves2': None,
+            'accessory3': None,
+            'accessory4': None,
+            'shoes': None,
+        }
+
         tickerhandler.add(interval=randint(10, 15), callback=self.at_regen, persistent=True)
 
     def at_post_puppet(self):
@@ -290,24 +317,6 @@ class Character(GenderCharacter):
             self.traits.EP.mod = \
                 int(+(self.traits.ENC.actual // (2 * self.traits.STR.actual)))
 
-    def update_secondary(self):
-        self.traits.HP.mod = abilitymodifiers[self.traits.CON.actual - 1]
-        self.traits.SP.mod = abilitymodifiers[self.traits.INT.actual - 1] + abilitymodifiers[self.traits.WIS.actual - 1]
-        self.traits.FORT.mod = abilitymodifiers[self.traits.CON.actual - 1]
-        self.traits.REFL.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.WILL.mod = abilitymodifiers[self.traits.WIS.actual - 1]
-        self.traits.MAB.mod = abilitymodifiers[self.traits.STR.actual - 1]
-        self.traits.FAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.RAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.UAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.PDEF.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.MDEF.mod = abilitymodifiers[self.traits.INT.actual - 1]
-
-        self.traits.STR.carry_factor = 10
-        self.traits.STR.lift_factor = 20
-        self.traits.STR.push_factor = 40
-        self.traits.ENC.max = self.traits.STR.lift_factor * self.traits.STR.actual
-
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
@@ -325,4 +334,3 @@ class NPC(Character):
         for key, kwargs in npc.traits.items():
             self.traits.add(key, **kwargs)
 
-        update_secondary()

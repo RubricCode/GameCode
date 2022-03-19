@@ -25,14 +25,17 @@ from evennia import utils
 
 CONNECTION_SCREEN = """
 |b==============================================================|n
- Welcome to |g{}|n, version {}!
 
- If you have an existing account, connect to it by typing:
-      |wconnect <username> <password>|n
- If you need to create an account, type (without the <>'s):
-      |wcreate <username> <password>|n
+    |_|_|_|_Welcome to |g{}|n, version {}!
 
- Enter |whelp|n for more info. |wlook|n will re-show this screen.
+    Warning!!! Logging in to this game expresses a commitment to
+    follow all the rules.
+
+    If you have problems you may contact the administration at:
+    admin@lwmercadia.com.
+
+    Enter your character name or enter quit to quit.
 |b==============================================================|n""".format(
     settings.SERVERNAME, utils.get_evennia_version("short")
 )
+

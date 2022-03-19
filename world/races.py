@@ -39,7 +39,6 @@ from world.traitcalcs import abilitymodifiers
 
 
 class CmdRace(Command):
-
     """
     command for setting the race on the character
     takes one arg in the form of the race name
@@ -52,7 +51,7 @@ class CmdRace(Command):
     """
     key = "select"
     locks = "cmd:all()"
-    
+
     def func(self):
         caller = self.caller
         args = self.args.strip().lower()
@@ -67,8 +66,10 @@ class CmdRace(Command):
 
 class RaceException(Exception):
     """Base exception class for races module."""
+
     def __init__(self, msg):
         self.msg = msg
+
 
 ALL_RACES = ('Human', 'Elf', 'Dwarf', 'Gnome', 'Centaur', 'Ogryn', 'Drow', 'Duergar', 'Svirfneblin', 'Wemic', 'Drakkar',
              'Ursine', 'Feline', 'Lupine', 'Vulpine', 'Naga')
@@ -125,8 +126,8 @@ def apply_race(character, race):
     character.db.slots = race.slots
     character.db.limbs = race.limbs
     character.db.size = race.size
-    character.msg('You become the {} race.' .format(race.name))
-    
+    character.msg('You become the {} race.'.format(race.name))
+
     # apply race-based bonuses
     for trait, bonus in race.bonuses.items():
         character.traits[trait].mod += bonus
@@ -147,6 +148,7 @@ def apply_race(character, race):
 
 class Race(object):
     """Base class for race attributes"""
+
     def __init__(self):
         self.name = ""
         self.plural = ""
@@ -193,25 +195,28 @@ class Race(object):
             ('finger2', ('ring2', 'accessory4',)),
             ('feet', ('boots', 'shoes',)),
         )
-        
+
         self.bonuses = {}
         self.language = {}
 
-       
+
 class Human(Race):
     """Class representing human attributes."""
+
     def __init__(self):
         super(Human, self).__init__()
         self.name = "Human"
         self.plural = "Humans"
         self.size = "medium"
         self.language = "common"
-        
+
+
 # Kingdom Races
 
 
 class Elf(Race):
     """Class representing elven attributes."""
+
     def __init__(self):
         super(Elf, self).__init__()
         self.name = "Elf"
@@ -223,8 +228,9 @@ class Elf(Race):
         self.language = "Elven"
 
 
-class Dwarf(Race): 
+class Dwarf(Race):
     """Class representing dwarven attributes."""
+
     def __init__(self):
         super(Dwarf, self).__init__()
         self.name = "Dwarf"
@@ -236,8 +242,9 @@ class Dwarf(Race):
         self.language = "Dwarven"
 
 
-class Gnome(Race): 
+class Gnome(Race):
     """Class representing gnomish attributes."""
+
     def __init__(self):
         super(Gnome, self).__init__()
         self.name = "Gnome"
@@ -249,8 +256,9 @@ class Gnome(Race):
         self.language = "Gnomish"
 
 
-class Centaur(Race): 
+class Centaur(Race):
     """Class representing centaur attributes."""
+
     def __init__(self):
         super(Centaur, self).__init__()
         self.name = "Centaur"
@@ -259,11 +267,12 @@ class Centaur(Race):
         self.bonuses = {'WIS': 2,
                         'INT': -2
                         }
-        self.language = "Centaur" 
+        self.language = "Centaur"
 
 
-class Ogryn(Race): 
+class Ogryn(Race):
     """Class representing Ogryn attributes."""
+
     def __init__(self):
         super(Ogryn, self).__init__()
         self.name = "Ogryn"
@@ -273,12 +282,13 @@ class Ogryn(Race):
                         'INT': -2
                         }
         self.language = "Ogryn"
-          
+
 
 # Caliphate Races
 
-class Drow(Race): 
+class Drow(Race):
     """Class representing Drow attributes."""
+
     def __init__(self):
         super(Drow, self).__init__()
         self.name = "Drow"
@@ -292,8 +302,9 @@ class Drow(Race):
         self.language = "Drow"
 
 
-class Duergar(Race): 
+class Duergar(Race):
     """Class reresenting elven attributes."""
+
     def __init__(self):
         super(Duergar, self).__init__()
         self.name = "Duergar"
@@ -303,11 +314,12 @@ class Duergar(Race):
                         'WIS': 2,
                         'CHA': -2
                         }
-        self.language = "Duergar"        
+        self.language = "Duergar"
 
 
-class Svirfneblin(Race): 
+class Svirfneblin(Race):
     """Class reresenting Svirfneblin attributes."""
+
     def __init__(self):
         super(Svirfneblin, self).__init__()
         self.name = "Svirfneblin"
@@ -321,8 +333,9 @@ class Svirfneblin(Race):
         self.language = "Svirfneblin"
 
 
-class Wemic(Race): 
+class Wemic(Race):
     """Class reresenting Wemic attributes."""
+
     def __init__(self):
         super(Wemic, self).__init__()
         self.name = "Wemic"
@@ -336,8 +349,9 @@ class Wemic(Race):
         self.language = "Wemic"
 
 
-class Drakkar(Race): 
+class Drakkar(Race):
     """Class reresenting Drakkari attributes."""
+
     def __init__(self):
         super(Drakkar, self).__init__()
         self.name = "Drakkar"
@@ -352,9 +366,10 @@ class Drakkar(Race):
 
 
 # Empire Races
- 
-class Ursine(Race): 
+
+class Ursine(Race):
     """Class reresenting elven attributes."""
+
     def __init__(self):
         super(Ursine, self).__init__()
         self.name = "Ursine"
@@ -366,8 +381,9 @@ class Ursine(Race):
         self.language = "Ursine"
 
 
-class Lupine(Race): 
+class Lupine(Race):
     """Class reresenting lupine attributes."""
+
     def __init__(self):
         super(Lupine, self).__init__()
         self.name = "Lupine"
@@ -379,8 +395,9 @@ class Lupine(Race):
         self.language = "Lupine"
 
 
-class Feline(Race): 
+class Feline(Race):
     """Class reresenting feline attributes."""
+
     def __init__(self):
         super(Feline, self).__init__()
         self.name = "Feline"
@@ -392,8 +409,9 @@ class Feline(Race):
         self.language = "Feline"
 
 
-class Vulpine(Race): 
+class Vulpine(Race):
     """Class reresenting vulpine attributes."""
+
     def __init__(self):
         super(Vulpine, self).__init__()
         self.name = "Vulpine"
@@ -405,8 +423,9 @@ class Vulpine(Race):
         self.language = "Vulpine"
 
 
-class Naga(Race): 
+class Naga(Race):
     """Class reresenting nagan attributes."""
+
     def __init__(self):
         super(Naga, self).__init__()
         self.name = "Naga"
@@ -417,3 +436,5 @@ class Naga(Race):
                         'CHA': -2
                         }
         self.language = "Nagan"
+
+
