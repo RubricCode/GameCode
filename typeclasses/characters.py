@@ -46,7 +46,7 @@ traits = {
     'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
     'EP': {'type': 'gauge', 'base': 100, 'mod': 0, 'min': 0, 'name': 'Endurance Points'},
     'LVL': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Level'},
-    'XP': {'type': 'counter', 'base': 0, 'mod': 0, 'name': 'Experience',
+    'XP': {'type': 'counter', 'base': 1, 'mod': 0, 'name': 'Experience',
            'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
 }
 
@@ -187,8 +187,8 @@ class Character(GenderCharacter):
         self.db.smellable_text = "You don't smell anything special."
         self.db.feelable_text = "You don't feel anything special."
         self.db.tasteable_text = "You don't taste anything special."
-        self.db.bank = ""
-        self.db.wallet = ""
+        self.db.bank = 0
+        self.db.wallet = 0
 
         self.db.permadeath = False
         self.db.descSet = False

@@ -13,17 +13,17 @@ class CmdRules(MuxCommand):
     Usage:
       rules
     """
- 
+
     key = "rules"
     locks = "cmd:all()"
-    
+
     def func(self):
         caller = self.caller
 
         choice = yield "  Have you read the rules and agree to abide by them (Yes/No)?"
         if not choice in ('yes', 'y', 'no', 'n'):
             choice = yield "please answer Yes or No"
-        if choice in('yes', 'y'):
+        if choice in ('yes', 'y'):
             caller.msg('You agree to the rules and may now continue To the Kingdom, Caliphate or Empire')
             caller.db.rules = True
         if choice in ('no', 'n'):
@@ -77,7 +77,6 @@ class CmdPassVeil(MuxCommand):
         gender = caller.db.gender
         race = caller.db.race
 
-
         del caller.db.descSet
         del caller.db.backSet
         del caller.db.statSet
@@ -102,17 +101,17 @@ class CmdPassVeil(MuxCommand):
             newhome = self.obj.search('Central Plaza - Sakath', global_search=True)
             caller.home = newhome
             valid_choice = ("servant", "conscript", "slave")
-            result = yield ("would you like to start as a Servant, conscript or slave?")
+            result = yield "would you like to start as a Servant, conscript or slave?"
             if result not in valid_choice:
-                result = yield ("please enter servant, conscript or slave")
+                result = yield "please enter servant, conscript or slave"
             if 'servant' in result:
                 guild = "Servant"
-                apply_guild(caller,guild)
+                apply_guild(caller, guild)
                 startloc = self.obj.search('Palace - Servant Office ', global_search=True)
                 self.obj.move_to(startloc, quiet=True, move_hooks=False)
                 servmsg = " [************--World Crier--************]" \
-                           "%s becomes a servant in the Caliph's Palace!" \
-                           "[*****************************************]"
+                          "%s becomes a servant in the Caliph's Palace!" \
+                          "[*****************************************]"
                 SESSIONS.announce_all(servmsg)
 
             if 'conscript' in result:
@@ -121,8 +120,8 @@ class CmdPassVeil(MuxCommand):
                 startloc = self.obj.search('Warden Office - Conscript Quarters', global_search=True)
                 self.obj.move_to(startloc, quiet=True, move_hooks=False)
                 consmsg = " [************--World Crier--************]" \
-                           "%s is conscripted into the Caliph's Legions!" \
-                           "[*****************************************]"
+                          "%s is conscripted into the Caliph's Legions!" \
+                          "[*****************************************]"
                 SESSIONS.announce_all(consmsg)
 
             if 'slave' in result:
@@ -136,9 +135,9 @@ class CmdPassVeil(MuxCommand):
                            "[*****************************************]"
                 SESSIONS.announce_all(slavemsg)
                 choices = ('worker', 'performer', 'teacher', 'gladiator')
-                choice = yield('Select the type of slave. worker, teacher, performer or gladiator')
+                choice = yield 'Select the type of slave. worker, teacher, performer or gladiator'
                 if choice not in choices:
-                    choice = yield ("please enter worker, teacher, performer or gladiator")
+                    choice = yield "please enter worker, teacher, performer or gladiator"
                     if 'worker' in choice:
                         message = "|/======================**********=====================|/|/" \
                                   "The Slave Master of Sakath Announces the Sale of|/" \

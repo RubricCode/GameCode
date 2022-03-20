@@ -1,6 +1,7 @@
 import random
 from typeclasses.scripts import Script
 from world import rulebook
+
 """
 Simple turn-based combat system
 
@@ -110,31 +111,34 @@ def get_attack(attacker, defender, attack_type):
         This can easily be expanded to return a value based on characters stats,
         equipment, and abilities. This is why the attacker and defender are passed
         to this function, even though nothing from either one are used in this example.
+        :param attacker:
+        :param defender:
+        :param attack_type:
     """
     # For this example, just return a random integer up to 100.
-	weapon = attacker.slots["wield1"]
+    weapon = attacker.slots["wield1"]
 
-	attack_roll = rulebook.d_roll('1D20')
-	
-	if attack_roll == 1
-		attack_value = 1
-	
-	if attack_roll == 20
-		critical_hit = True
+    attack_roll = rulebook.d_roll('1D20')
 
-	if weapon
-		if weapon.range == 'Melee'
-			if weapon.is_finessable
-			attack_value = attack_roll + attacker.traits.FAB.actual
+    if attack_roll == 1:
+        attack_value = 1
 
-		attack_value = attack_roll + attacker.traits.MAB.actual
+    if attack_roll == 20:
+        critical_hit = True
 
-		if weapon.range == 'Ranged'
-			attack_value = attack_roll + attacker.traits.RAB.actual
-	
-	attack_value = attack_roll + attacker.traits.UAB.actual
+    if weapon:
+        if weapon.range == 'Melee':
+            if weapon.is_finessable:
+                attack_value = attack_roll + attacker.traits.FAB.actual
 
-	return attack_value
+        attack_value = attack_roll + attacker.traits.MAB.actual
+
+        if weapon.range == 'Ranged':
+            attack_value = attack_roll + attacker.traits.RAB.actual
+
+    attack_value = attack_roll + attacker.traits.UAB.actual
+
+    return attack_value
 
 
 def get_defense(attacker, defender):
@@ -182,11 +186,11 @@ def get_damage(attacker, defender):
     """
     # For this example, just generate a number between 15 and 25.
     damage = rulebook.d_roll(weapon.damage_roll)
-	if critical_hit
-		damage_value = (damage * weapon.crit_mod) + Character.traits.STR.mod + weapon.modifier
-		return damage_value
+    if critical_hit:
+        damage_value = (damage * weapon.crit_mod) + Character.traits.STR.mod + weapon.modifier
+        return damage_value
 
-	damage_value = damage + Character.traits.STR.mod + weapon.modifier
+    damage_value = damage + Character.traits.STR.mod + weapon.modifier
     return damage_value
 
 
@@ -233,17 +237,19 @@ def resolve_attack(attacker, defender, attack_value=None, defense_value=None):
         Even though the attack and defense values are calculated
         extremely simply, they are separated out into their own functions
         so that they are easier to expand upon.
+        :param defense_value:
+        :param attack_value:
     """
     # Get an attack roll from the attacker.
     if not attack_value:
-        attack_value = get_attack(attacker, defender)
+        attack_value = get_attack(attacker, defender, attack_type)
     # Get a defense value from the defender.
     if not defense_value:
         defense_value = get_defense(attacker, defender)
     # If the attack value is lower than the defense value, miss. Otherwise, hit.
-    if attack_value == 1
-		attacker.location.msg_contents("%s's attack misses %s!" % (attacker, defender))
-	if attack_value < defense_value:
+    if attack_value == 1:
+        attacker.location.msg_contents("%s's attack misses %s!" % (attacker, defender))
+    if attack_value < defense_value:
         attacker.location.msg_contents("%s's attack misses %s!" % (attacker, defender))
     else:
         damage_value = get_damage(attacker, defender)  # Calculate damage value.
@@ -322,8 +328,6 @@ def spend_action(character, actions, action_name=None):
         if character.db.combat_actionsleft < 0:
             character.db.combat_actionsleft = 0  # Can't have fewer than 0 actions
     character.db.combat_turnhandler.turn_end_check(character)  # Signal potential end of turn.
-
-
 
 
 """
@@ -454,7 +458,7 @@ class TBBasicTurnHandler(DefaultScript):
         disengage_check = True
         for fighter in self.db.fighters:
             if (
-                fighter.db.combat_lastaction != "disengage"
+                    fighter.db.combat_lastaction != "disengage"
             ):  # If a character has done anything but disengage
                 disengage_check = False
         if disengage_check:  # All characters have disengaged
@@ -468,12 +472,12 @@ class TBBasicTurnHandler(DefaultScript):
             if fighter.db.HP == 0:
                 defeated_characters += 1  # Add 1 for every fighter with 0 HP left (defeated)
         if defeated_characters == (
-            len(self.db.fighters) - 1
+                len(self.db.fighters) - 1
         ):  # If only one character isn't defeated
             for fighter in self.db.fighters:
                 if fighter.db.HP != 0:
-                    LastStanding = fighter  # Pick the one fighter left with HP remaining
-            self.obj.msg_contents("Only %s remains! Combat is over!" % LastStanding)
+                    last_standing = fighter  # Pick the one fighter left with HP remaining
+            self.obj.msg_contents("Only %s remains! Combat is over!" % last_standing)
             self.stop()  # Stop this script and end combat.
             return
 

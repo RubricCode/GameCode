@@ -4,6 +4,7 @@ from evennia import create_object, utils, CmdSet, create_script
 from commands.command import MuxCommand
 from commands import power
 
+
 class CmdDismiss(MuxCommand):
     """
      Command Name:Expel
@@ -34,6 +35,7 @@ class CmdDismiss(MuxCommand):
         target.db.guild = "serf"
         target.cmdset.remove(bgpowers.UrchinCmdSet)
         caller.msg("You have dismissed %s from your guild ." % target)
+
 
 class CmdExile(MuxCommand):
     """
@@ -66,6 +68,7 @@ class CmdExile(MuxCommand):
         target.cmdset.remove(bgpowers.UrchinCmdSet)
         caller.msg("You have dismissed %s from your guild ." % target)
 
+
 class CmdQuietMind(MuxCommand):
     """
      Command Name:Expel
@@ -96,6 +99,7 @@ class CmdQuietMind(MuxCommand):
         target.db.guild = "serf"
         target.cmdset.remove(bgpowers.UrchinCmdSet)
         caller.msg("You have dismissed %s from your guild ." % target)
+
 
 class CmdPromote(MuxCommand):
     """
@@ -128,6 +132,7 @@ class CmdPromote(MuxCommand):
         target.cmdset.remove(bgpowers.UrchinCmdSet)
         caller.msg("You have dismissed %s from your guild ." % target)
 
+
 class CmdDemote(MuxCommand):
     """
      Command Name:Expel
@@ -158,5 +163,3 @@ class CmdDemote(MuxCommand):
         target.db.guild = "serf"
         target.cmdset.remove(bgpowers.UrchinCmdSet)
         caller.msg("You have dismissed %s from your guild ." % target)
-
-

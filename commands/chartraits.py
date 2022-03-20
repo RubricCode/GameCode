@@ -8,7 +8,6 @@ from evennia.utils.evform import EvForm
 
 
 class CharTraitCmdSet(CmdSet):
-
     key = "chartrait_cmdset"
     priority = 1
 
@@ -91,15 +90,18 @@ class CmdWealth(MuxCommand):
     arg_regex = r"\s.+|"
 
     def func(self):
+        bank = self.caller.db.bank
+        wallet = self.caller.db.wallet
         wealth_message = """
 Your money in Royals:
 Bank Wealth    : {bank}
 Carried Wealth : {wallet}
 Total Wealth   : {total} """.format(
-           bank="\n\t  ".join([self.db.bank]),
-           wallet="\n\t  ".join([self.db.wallet]),
-           total="\n\t  ".join([self.db.bank + self.db.wallet]))
+            bank="\n\t  ".join([str(bank)]),
+            wallet="\n\t  ".join([str(wallet)]),
+            total="\n\t  ".join([str(bank + wallet)]))
         self.caller.msg(wealth_message)
+
 
 class CmdVitals(MuxCommand):
     """
@@ -120,7 +122,7 @@ class CmdVitals(MuxCommand):
 
 class CmdLevel(MuxCommand):
     """
-    view the experiance points and coin amount required to advance to the next level
+    view the experience points and coin amount required to advance to the next level
     Usage: 
       Level
     Displays the requirements for advancing to the next level
@@ -131,12 +133,22 @@ class CmdLevel(MuxCommand):
     locks = 'cmd:all()'
 
     def func(self):
+        bank = self.caller.db.bank
+        wallet = self.caller.db.wallet
+        total = bank + wallet
         tr = self.caller.traits
         lvl = str(tr.LVL.actual + 1)
         xp1 = rulebook.LEVEL[lvl]['xp']
         coin1 = rulebook.LEVEL[lvl]['coins']
         xp2 = rulebook.LEVEL[lvl]['xp'] - tr.XP.actual
-        coin2 = rulebook.LEVEL[lvl]['coins'] - self.caller.wallet
-        self.caller.msg("|MLEVEL %s ADVANCEMENT"
-                        "Advancement will cost %s Experience and %s coins"
-                        "|CYou will need %s more Experiance and %s more coins" % (lvl, xp1, coin1, xp2, coin2))
+        coin2 = rulebook.LEVEL[lvl]['coins'] - total
+
+        if xp2 <= 0 and coin2 <= 0:
+            self.caller.msg("|yYou Are Ready To Advance!|/"
+                            "|MLEVEL %s ADVANCEMENT|/"
+                            "Advancement will cost %s Experience and %s coins|/"
+                            "|CYou will need %s more Experience and %s more coins" % (lvl, xp1, coin1, xp2, coin2))
+        else:
+            self.caller.msg("|MLEVEL %s ADVANCEMENT|/"
+                            "Advancement will cost %s Experience and %s coins|/"
+                            "|CYou will need %s more Experience and %s more coins" % (lvl, xp1, coin1, xp2, coin2))
