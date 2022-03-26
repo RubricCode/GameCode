@@ -33,6 +33,7 @@ class CmdForge(MuxCommand):
 
      A simple spell that allows a merchant/artisan/trader
    to create either weapons or armor from material components.
+
    """
 
     key = "forge"
@@ -51,6 +52,10 @@ class CmdForge(MuxCommand):
 
         if " " in args:
             self.material, self.recipe = self.args.split(" ", 1)
+
+        if self.material not in MATERIALS.keys():
+            caller.msg("That is not a valid crafting material.")
+            return
 
         if self.recipe not in RECIPES.keys():
             caller.msg("That is not a valid recipe.")
@@ -108,7 +113,7 @@ class CmdForge(MuxCommand):
             recipe=RECIPES.get(self.recipe).get("key")))
 
         caller.location.msg_contents(
-            "|511{actor} fires up the forge in preperation to forge a {material} {recipe}.|n",
+            "|511{actor} fires up the forge in preparation to forge a {material} {recipe}.|n",
             mapping=dict(actor=caller,
                          material=self.material,
                          recipe=RECIPES.get(self.recipe).get("key")),
@@ -131,9 +136,9 @@ class CmdForge(MuxCommand):
                     material=self.material))
                 caller.location.msg_contents(
                     "|511{actor} begins smelting a usable {material} bar from iron ore and coal.|n",
-                                             mapping=dict(actor=caller,
-                                                          material=self.material),
-                                             exclude=caller)
+                    mapping=dict(actor=caller,
+                                 material=self.material),
+                    exclude=caller)
             elif "brass" in self.material:
                 caller.msg("|511You begin smelting a usable {material} bar from copper and zinc ores.|n".format(
                     material=self.material))
@@ -153,7 +158,7 @@ class CmdForge(MuxCommand):
             else:
 
                 caller.msg('|511You begin smelting the {material} ore into a usable bar for forging at the smelter.|n'
-                    .format(material=self.material))
+                           .format(material=self.material))
 
                 caller.location.msg_contents(
                     "|511{actor} begins smelting the {material} ore into a usable bar for forging at the smelter.|n",
@@ -240,4 +245,136 @@ if lastcast and time.time() - lastcast < 3 * 60:
     return
 
 tr.SP.current -= 10
+
+has_smelter = any([x for x in self.caller.location.contents if x.tags.has("smelter")])
+
 """
+
+
+class CmdSmelt(MuxCommand):
+    """
+    Spell Name: Smelt
+       SP Cost: 10
+    Coins Cost: Varies depending on recipe
+        Syntax: smelt <material>
+   Skills used: forge, weapons, armor
+
+   Description:
+
+     A simple spell that allows a merchant/artisan/trader
+   to smelt raw ore into usable material components.
+   """
+
+    key = "smelt"
+    locks = "cmd:all()"
+    help_category = "commands"
+
+    def func(self):
+        material = self.args
+        caller = self.caller
+
+        if not material:
+            caller.msg("Smelt What?")
+            return
+
+        item_name = "%s ingot" % (self.material.capitalize())
+        item_aliases = RECIPES.get(self.recipe).get("aliases")
+        item_typeclass = typeclasses.resources.Resource
+        item_desc = MATERIALS.get(self.recipe).get("desc_bar").format(material=self.material, crafter=caller)
+        item_weight = MATERIALS.get(self.material).get("weight")
+        item_value = MATERIALS.get(self.material).get("value")
+        item_color = MATERIALS.get(self.material).get("color_code")
+
+        self.ingot_proto = {
+            "key": item_name,
+            "color_code": item_color,
+            "aliases": item_aliases,
+            "typeclass": item_typeclass,
+            "desc": item_desc,
+            "weight": item_weight,
+            "value": item_value,
+            "durability": item_durability,
+            "current": item_current,
+            "hardness": item_hardness,
+            "location": caller.location
+        }
+
+        caller.msg('|511You fire up the smelter in preparation to smelt a {material} ingot.|n'.format(
+            material=self.material, ))
+
+        caller.location.msg_contents(
+            "|511{actor} fires up the smelter in preparation to smelt a {material} ingot.|n",
+            mapping=dict(actor=caller,
+                         material=self.material,
+                         ),
+            exclude=caller)
+
+        utils.delay(20, callback=self.smelt_one)
+
+    def smelt_one(self):
+        caller = self.caller
+        material = self.args
+        metal = ("iron", "steel", "mithril", "adamantine", "copper", "bronze", "brass", "silver", "gold")
+
+        if material in metal:
+
+            if "steel" in material:
+                caller.msg("|511You begin smelting a usable {material} ingot from iron ore and some coal.|n".format(
+                    material=material))
+                caller.location.msg_contents(
+                    "|511{actor} begins smelting a usable {material} ingot from iron ore and coal.|n",
+                    mapping=dict(actor=caller,
+                                 material=material),
+                    exclude=caller)
+            elif "brass" in material:
+                caller.msg("|511You begin smelting a usable {material} ingot from copper and zinc ores.|n".format(
+                    material=material))
+                caller.location.msg_contents(
+                    "|511{actor} begins smelting a usable {material} ingot from copper and zinc ores.|n",
+                    mapping=dict(actor=caller,
+                                 material=material),
+                    exclude=caller)
+            elif "bronze" in material:
+                caller.msg("|511You begin smelting a usable {material} ingot from copper and tin ores.|n".format(
+                    material=material))
+                caller.location.msg_contents(
+                    "|511{actor} begins smelting a usable {material} ingot from copper and tin ores.|n",
+                    mapping=dict(actor=caller,
+                                 material=material),
+                    exclude=caller)
+            else:
+
+                caller.msg('|511You begin smelting the {material} ore into a usable ingot for forging at the smelter.|n'
+                           .format(material=material))
+
+                caller.location.msg_contents(
+                    "|511{actor} begins smelting the {material} ore into a usable ingot for forging at the smelter.|n",
+                    mapping=dict(actor=caller,
+                                 material=material),
+                    exclude=caller)
+
+            utils.delay(20, callback=self.smelt_two)
+
+    def smelt_two(self):
+        caller = self.caller
+        material = self.args
+        metal = ("iron", "adamantine")
+
+        if material in metal:
+            caller.msg("|511You finish smelting an {material} ingot.|n".format(
+                material=material))
+            caller.location.msg_contents(
+                "|511{actor} finishes smelting an {material} ingot.|n",
+                mapping=dict(actor=caller,
+                             material=material),
+                exclude=caller)
+        else:
+            caller.msg("|511You finish smelting a {material} ingot.|n".format(
+                material=material))
+            caller.location.msg_contents(
+                "|511{actor} finishes smelting a {material} ingot.|n",
+                mapping=dict(actor=caller,
+                             material=material),
+                exclude=caller)
+
+        spawn(self.ingot_proto)

@@ -15,7 +15,6 @@ Resources are objects that are used in the creation of items within the game the
 
 """
 
-
 import time
 from typeclasses.objects import Object
 from random import randint
@@ -29,11 +28,10 @@ class ResourceNode(Object):
     def at_object_creation(self):
         super(ResourceNode, self).at_object_creation()
         self.locks.add("get:false()")
-        self.get_err_msg = None
-        self.db.amt = randint(3,12)
+        self.get_err_msg = ""
+        self.db.amt = randint(3, 12)
         self.db.type = None
         self.db.proto = None
-
 
     def at_harvest(self):
         if self.db.amt > 0:
@@ -82,19 +80,19 @@ class CmdSurvey(MuxCommand):
             exclude=caller)
         tr.SP.current -= 20
         caller.location.db.srv_last = time.time()
-        utils.delay(10, callback= self.survey)
+        utils.delay(10, callback=self.survey)
 
     def survey(self):
         caller = self.caller
         sk = caller.skills
         chance = randint(1, 100)
         success = 10 + sk.SRV.actual
-        climate =  caller.location.db.climate
+        climate = caller.location.db.climate
 
         if chance <= success:
             caller.msg("surveying the land you discover a")
             if "arid" in climate:
-               spawn(ARID)
+                spawn(ARID)
             if "mediterranean" in climate:
                 spawn(MEDITERRANEAN)
             if "polar" in climate:
@@ -125,7 +123,7 @@ class CmdMine(MuxCommand):
             caller.msg("You are not wielding the proper tool to mine.")
             return
 
-        if not deposit in caller.location:
+        if deposit not in caller.location:
             caller.msg("there is no minable deposits present.")
             return
 
@@ -150,15 +148,15 @@ class CmdSkin(MuxCommand):
         tool = "Skinning Knife"
 
         if tool not in wield:
-            caller.msg("You are not wielding the proper tool to mine.")
+            caller.msg("You are not wielding the proper tool to skin.")
             return
 
-        if not deposit in caller.location:
-            caller.msg("there is no minable deposits present.")
+        if deposit not in caller.location:
+            caller.msg("there is nothing to skin present.")
             return
 
         if last_skin and time.time() - last_skin < 60:
-            caller.msg("you may not mine that fast")
+            caller.msg("you may not skin that fast")
             return
 
         caller.msg("you begin to skin an animal")
@@ -178,15 +176,15 @@ class CmdChop(MuxCommand):
         tool = "Lumber Axe"
 
         if tool not in wield:
-            caller.msg("You are not wielding the proper tool to mine.")
+            caller.msg("You are not wielding the proper tool to chop.")
             return
 
-        if not deposit in caller.location:
-            caller.msg("there is no minable deposits present.")
+        if deposit not in caller.location:
+            caller.msg("there are no trees present.")
             return
 
         if last_chop and time.time() - last_chop < 60:
-            caller.msg("you may not mine that fast")
+            caller.msg("you may not chop that fast")
             return
 
         caller.msg("you begin to chop a tree for lumber")

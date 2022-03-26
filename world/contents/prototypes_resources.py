@@ -1,12 +1,11 @@
+# Ore Deposits
 
-#Ore Deposits
-
-ADAMANTINE_DEPOSIT ={
+ADAMANTINE_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "type":"mineral",
+    "type": "mineral",
 }
 
 COPPER_DEPOSIT = {
@@ -14,7 +13,7 @@ COPPER_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 GOLD_DEPOSIT = {
@@ -22,7 +21,7 @@ GOLD_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 SILVER_DEPOSIT = {
@@ -30,7 +29,7 @@ SILVER_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 TIN_DEPOSIT = {
@@ -38,7 +37,7 @@ TIN_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 ZINC_DEPOSIT = {
@@ -46,7 +45,7 @@ ZINC_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 IRON_DEPOSIT = {
@@ -54,16 +53,16 @@ IRON_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
-#Mineral Deposits
+# Mineral Deposits
 DIAMOND_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 RUBY_DEPOSIT = {
@@ -71,7 +70,7 @@ RUBY_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 EMERALD_DEPOSIT = {
@@ -79,7 +78,7 @@ EMERALD_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 SAPPHIRE_DEPOSIT = {
@@ -87,7 +86,7 @@ SAPPHIRE_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 ONYX_DEPOSIT = {
@@ -95,23 +94,23 @@ ONYX_DEPOSIT = {
     "typeclass": "typeclasses.resources.MineralDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
-#Soft Wood Deposits
+# Soft Wood Deposits
 CEDAR_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 CYPRESS_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 FIR_DEPOSIT = {
@@ -119,14 +118,14 @@ FIR_DEPOSIT = {
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
-YEW_DEPOSIT  = {
+YEW_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
 LARCH_DEPOSIT = {
@@ -134,142 +133,339 @@ LARCH_DEPOSIT = {
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 PINE_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 SPRUCE_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
-#Hard Wood Deposits
+# Hard Wood Deposits
 ACACIA_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 ALDER_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
-ASH_DEPOSIT  = {
+ASH_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 BEECH_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 BIRCH_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 CHERRY_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 EBONY_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 ELM_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 IRONWOOD_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 MAHOGANY_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 MAPLE_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 OAK_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 POPLAR_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 WALNUT_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 WILLOW_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 ZINGANA_DEPOSIT = {
     "key": "Deposit",
     "typeclass": "typeclasses.resources.LumberDeposit",
     "desc": "|/"
             "  ",
-    "":"",
+    "": "",
 }
 
-#Resources
+# Resources
 COPPER_ORE = {
-    "key": "Ore",
+    "key": "Copper ore",
     "typeclass": "typeclasses.resources.Resource",
     "desc": "|/"
             "  ",
-    "":"",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+
+}
+
+IRON_ORE = {
+    "key": "Iron ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+ADAMANTINE_ORE = {
+    "key": "Adamantine ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+GOLD_ORE = {
+    "key": "Gold ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+SILVER_ORE = {
+    "key": "Silver ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+TIN_ORE = {
+    "key": "Tin ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+COAL_ORE = {
+    "key": "Coal",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+ZINC_ORE = {
+    "key": "Zinc ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+MITHRIL_ORE = {
+    "key": "Mithril ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+COPPER_BAR = {
+    "key": "Copper ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+IRON_BAR = {
+    "key": "Iron ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+ADAMANTINE_BAR = {
+    "key": "Adamantine ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+GOLD_BAR = {
+    "key": "Gold ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+SILVER_BAR = {
+    "key": "Silver ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+BRONZE_BAR = {
+    "key": "Tin ore",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+BRASS_BAR = {
+    "key": "Brass bar",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
+}
+
+MITRIL_BAR = {
+    "key": "Mithril bar",
+    "typeclass": "typeclasses.resources.Resource",
+    "desc": "|/"
+            "  ",
+    "weight": "",
+    "hardness": "",
+    "value": "",
+    "type": "",
+    "color_code": "",
 }

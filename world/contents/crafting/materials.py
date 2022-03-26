@@ -27,7 +27,7 @@ MATERIALS = {
         "hardness_mod": 7,
         "color_code": "", },
 
-    #wood
+    # wood
 
     "cedar": {
         "value_mod": 1,
@@ -200,6 +200,10 @@ MATERIALS = {
     # metals
 
     "iron": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 0.8,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -207,6 +211,9 @@ MATERIALS = {
         "color_code": "|=l", },
 
     "steel": {
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 1,
         "weight_mod": .5,
         "dura_mod": 10,
@@ -214,6 +221,10 @@ MATERIALS = {
         "color_code": "|=j", },
 
     "mithril": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 5,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -221,6 +232,10 @@ MATERIALS = {
         "color_code": "|445", },
 
     "adamantine": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 10,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -228,6 +243,10 @@ MATERIALS = {
         "color_code": "|=g", },
 
     "copper": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": .5,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -235,6 +254,9 @@ MATERIALS = {
         "color_code": "|510", },
 
     "bronze": {
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": .55,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -242,6 +264,9 @@ MATERIALS = {
         "color_code": "|320", },
 
     "brass": {
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": .60,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -249,6 +274,10 @@ MATERIALS = {
         "color_code": "|420", },
 
     "silver": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 2,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -256,6 +285,10 @@ MATERIALS = {
         "color_code": "|555", },
 
     "gold": {
+        "desc_ore": "",
+        "desc_bar": "",
+        "value": 1,
+        "weight": 1,
         "value_mod": 4,
         "weight_mod": 1,
         "dura_mod": 10,
@@ -304,5 +337,5 @@ MATERIALS = {
         "weight_mod": 1,
         "dura_mod": 10,
         "hardness_mod": 4,
-        "color_code": "|304",},
+        "color_code": "|304", },
 }

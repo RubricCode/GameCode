@@ -12,6 +12,7 @@ inheritance.
 """
 from evennia import DefaultObject
 
+
 class Object(DefaultObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
@@ -159,6 +160,7 @@ class Object(DefaultObject):
                                  object speaks
 
      """
+
     def at_object_creation(self):
         super(Object, self).at_object_creation()
         self.db.color_code = ""
