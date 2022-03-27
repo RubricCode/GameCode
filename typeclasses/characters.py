@@ -176,7 +176,7 @@ class Character(GenderCharacter):
         self.db.nation = ""
         self.db.race = 'Wisp'
         self.db.background = ""
-        self.db.guild = ""
+        self.db.guild = None
         self.db.clan = ""
         self.db.profession = ""
         self.db.title = ""

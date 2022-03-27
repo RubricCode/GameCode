@@ -7,7 +7,7 @@
 #
 # Read command
 #
-from objects import Object
+from typeclasses.objects import Object
 from commands.command import MuxCommand
 
 
