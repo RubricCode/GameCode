@@ -9,7 +9,7 @@ from world.rulebook import d_roll
 from evennia.prototypes.spawner import spawn
 
 
-class SorcCmdSet(CmdSet):
+class SorcererCmdSet(CmdSet):
     """
     This stores the input command
     """

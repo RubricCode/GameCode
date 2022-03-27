@@ -1,9 +1,28 @@
 import time
-from evennia import utils
+from evennia import create_object, utils, CmdSet, create_script
 from world.contents.crafting.recipes import RECIPES
 from world.contents.crafting.materials import MATERIALS
 from commands.command import MuxCommand
 from evennia.prototypes.spawner import spawn
+from math import floor
+from evennia import create_object, utils, CmdSet, create_script
+from commands import power
+from random import randint
+from evennia.utils.evform import EvForm
+from world.rulebook import d_roll
+
+
+class MerchantCmdSet(CmdSet):
+    """
+    This stores the input command
+    """
+    key = "commands"
+
+    def at_cmdset_creation(self):
+        """called once at creation"""
+        self.add(power.CmdPower())
+        self.add(CmdForge())
+
 
 empire_list = ()
 caliphate_list = ()
