@@ -11,44 +11,52 @@ from random import randint
 from evennia import TICKER_HANDLER as tickerhandler
 from evennia.utils import lazy_property
 from world.equip import EquipHandler
-from world.traits import TraitHandler
-from evennia.contrib.gendersub import GenderCharacter
+from evennia.contrib.rpg.traits import TraitHandler
+from evennia.contrib.game_systems.gendersub import GenderCharacter
 from commands import chartraits, equip
 from world.rulebook import parse_health
-from world.traitcalcs import abilitymodifiers
+from world.traitcalcs import abilitymodifiers, calculate_secondary_traits
 from world.death import CharDeathHandler
 from math import floor
 from evennia.server.sessionhandler import SESSIONS
 
+
 traits = {
     # primary
-    'STR': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Strength'},
-    'DEX': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Dexterity'},
-    'CON': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Constitution'},
-    'INT': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Intelligence'},
-    'WIS': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Wisdom'},
-    'CHA': {'type': 'static', 'base': 3, 'mod': 0, 'name': 'Charisma'},
+    'STR': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Strength', 'trait_type': 'static'}, 
+    'DEX': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Dexterity', 'trait_type': 'static'}, 
+    'CON': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Constitution', 'trait_type': 'static'}, 
+    'INT': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Intelligence', 'trait_type': 'static'}, 
+    'WIS': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Wisdom', 'trait_type': 'static'}, 
+    'CHA': {'base': 3, 'mod': 0, 'mult': 1, 'name': 'Charisma', 'trait_type': 'static'}, 
     # secondary
-    'HP': {'type': 'gauge', 'base': 100, 'mod': 0, 'name': 'Health'},
-    'SP': {'type': 'gauge', 'base': 100, 'mod': 0, 'name': 'Spell Power'},
+    'HP': {'base': 100, 'min': 0, 'max': None, 'name': 'Health', 'trait_type': 'gauge', 'mult': 1.0, 'rate': 0,
+           'ratetarget': None, 'mod': 0, 'descs': None, 'last_update': None, 'current': 100.0},
+    'SP': {'base': 100, 'min': 0, 'max': None, 'name': 'Spell Power', 'trait_type': 'gauge', 'mult': 1.0, 'rate': 0,
+           'ratetarget': None, 'mod': 0, 'descs': None, 'last_update': None, 'current': 100.0},
+    'EP': {'base': 100, 'min': 0, 'max': None, 'name': 'Endurance', 'trait_type': 'gauge', 'mult': 1.0, 'rate': 0,
+           'ratetarget': None, 'mod': 0, 'descs': None, 'last_update': None, 'current': 100.0},
     # saves
-    'FORT': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Fortitude Save'},
-    'REFL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Reflex Save'},
-    'WILL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Will Save'},
+    'FORT': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Fortitude Save', 'trait_type': 'static'},
+    'REFL': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Reflex Save', 'trait_type': 'static'},
+    'WILL': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Willpower Save', 'trait_type': 'static'},
+
     # combat
-    'MAB': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Melee Attack Bonus'},
-    'RAB': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Ranged Attack Bonus'},
-    'UAB': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Unarmed Attack Bonus'},
-    'FAB': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Finesse Attack Bonus'},
-    'PDEF': {'type': 'static', 'base': 10, 'mod': 0, 'name': 'Physical Defense'},
-    'MDEF': {'type': 'static', 'base': 10, 'mod': 0, 'min': 0, 'name': 'Magical Defense'},
+    'MAB': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Melee Attack Bonus', 'trait_type': 'static'},
+    'RAB': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Ranged Attack Bonus', 'trait_type': 'static'},
+    'UAB': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Unarmed Attack Bonus', 'trait_type': 'static'},
+    'FAB': {'base': 0, 'mod': 0, 'mult': 1, 'name': 'Finesse Attack Bonus', 'trait_type': 'static'},
+    'PDEF': {'base': 10, 'mod': 0, 'mult': 1, 'name': 'Physical Defense', 'trait_type': 'static'},
+    'MDEF': {'base': 10, 'mod': 0, 'mult': 1, 'name': 'Magical Defense', 'trait_type': 'static'},
+
     # misc
-    'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
-    'EP': {'type': 'gauge', 'base': 100, 'mod': 0, 'min': 0, 'name': 'Endurance Points'},
-    'LVL': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Level'},
-    'XP': {'type': 'counter', 'base': 1, 'mod': 0, 'name': 'Experience',
-           'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
+    'LVL': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Level', 'trait_type': 'static'},
+    'ENC': {'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'Carry Weight', 'trait_type': 'counter',
+            'ratetarget': None, 'mult': 1.0, 'descs': None, 'rate': 0, 'last_update': None},
+    'XP': {'base': 0, 'mod': 0, 'min': 0, 'max': None, 'name': 'Experience', 'trait_type': 'counter',
+           'ratetarget': None, 'mult': 1.0, 'descs': None, 'rate': 0, 'last_update': None},
 }
+
 
 wield_slots = ['wield1', 'wield2']
 armor_slots = ['helm', 'necklace', 'cloak', 'torso',
@@ -194,28 +202,19 @@ class Character(GenderCharacter):
         self.db.descSet = False
         self.db.backSet = False
         self.db.statSet = False
+        self.db.is_in_creation = True
+        self.db.carry_factor = 10
+        self.db.lift_factor = 20
+        self.db.push_factor = 40
         # self.db.is_in_combat = False
         # self.db.is_immobile = False
 
         for key, kwargs in traits.items():
             self.traits.add(key, **kwargs)
 
-        self.traits.HP.mod = abilitymodifiers[self.traits.CON.actual - 1]
-        self.traits.SP.mod = abilitymodifiers[self.traits.INT.actual - 1] + abilitymodifiers[self.traits.WIS.actual - 1]
-        self.traits.FORT.mod = abilitymodifiers[self.traits.CON.actual - 1]
-        self.traits.REFL.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.WILL.mod = abilitymodifiers[self.traits.WIS.actual - 1]
-        self.traits.MAB.mod = abilitymodifiers[self.traits.STR.actual - 1]
-        self.traits.FAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.RAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.UAB.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.PDEF.mod = abilitymodifiers[self.traits.DEX.actual - 1]
-        self.traits.MDEF.mod = abilitymodifiers[self.traits.INT.actual - 1]
+        calculate_secondary_traits(self.traits)
 
-        self.traits.STR.carry_factor = 10
-        self.traits.STR.lift_factor = 20
-        self.traits.STR.push_factor = 40
-        self.traits.ENC.max = self.traits.STR.lift_factor * self.traits.STR.actual
+        self.traits.ENC.max = self.db.lift_factor * self.traits.STR.value
 
         self.db.slots = {
             # armor slots
@@ -260,9 +259,9 @@ class Character(GenderCharacter):
     def traits(self):
         return TraitHandler(self)
 
-    @lazy_property
-    def skills(self, ):
-        return TraitHandler(self, db_attribute='skills')
+#    @lazy_property
+#    def skills(self, ):
+#        return TraitHandler(self, db_attribute='skills')
 
     @lazy_property
     def equip(self):
@@ -286,7 +285,7 @@ class Character(GenderCharacter):
         looker.msg("|S is %s.|/" % parse_health(self))
         looker.msg("You see a %s %s,|/" % (self.db.gender, self.db.race))
         looker.msg("%s" % self.db.desc)
-        looker.msg("|S has %s." % self.db.hairdesc)
+        looker.msg("|S has %s.|/" % self.db.hairdesc)
         looker.msg("|S has %s.|/" % self.db.eyedesc)
 
         equip_message = """
@@ -333,4 +332,3 @@ class NPC(Character):
         # initialize traits
         for key, kwargs in npc.traits.items():
             self.traits.add(key, **kwargs)
-

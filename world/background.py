@@ -29,36 +29,40 @@ from evennia import Command
 from commands.powers import bgpowers
 
 URCHIN_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
 }
 
 NOBLE_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadership', 'trait_type': 'static'},
 }
 
 NOMAD_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},}
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+}
 
 GYPSY_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},}
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+}
 
 FARMER_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'ORG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Organize'},}
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'ORG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Organize', 'trait_type': 'static'},
+}
 
 TRADESMAN_SKILLS = {
-    'ATT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Attack'},
-    'DEF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Defense'},
-    'FRG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Forge'},}
+    'ATT': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Attack', 'trait_type': 'static'},
+    'DEF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Defense', 'trait_type': 'static'},
+    'FRG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forge', 'trait_type': 'static'},
+}
 
 
 class CmdBackground(Command):
@@ -104,6 +108,8 @@ def load_background(background, character):
         background (str): case-insensitive name of background to load
     Returns:
         (Background): instance of the appropriate subclass of `Background`
+        :param background:
+        :param character:
     """
 
     background = background.strip().capitalize()
@@ -141,7 +147,7 @@ class Urchin(Background):
         self.name = "Urchin"
         character.cmdset.add(bgpowers.UrchinCmdSet, permanent=True)
         for key, kwargs in URCHIN_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)
 
 
 class Noble(Background):
@@ -150,7 +156,7 @@ class Noble(Background):
         self.name = 'Noble'
         character.cmdset.add(bgpowers.NobleCmdSet, permanent=True)
         for key, kwargs in NOBLE_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)
 
 
 class Nomad(Background):
@@ -159,7 +165,7 @@ class Nomad(Background):
         self.name = "Nomad"
         character.cmdset.add(bgpowers.NomadCmdSet, permanent=True)
         for key, kwargs in NOMAD_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)
 
 
 class Gypsy(Background):
@@ -168,7 +174,7 @@ class Gypsy(Background):
         self.name = 'Gypsy'
         character.cmdset.add(bgpowers.GpysyCmdSet, permanent=True)
         for key, kwargs in GYPSY_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)
 
 
 class Farmer(Background):
@@ -177,7 +183,7 @@ class Farmer(Background):
         self.name = 'Farmer'
         character.cmdset.add(bgpowers.FarmerCmdSet, permanent=True)
         for key, kwargs in FARMER_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)
 
 
 class Tradesman(Background):
@@ -186,4 +192,4 @@ class Tradesman(Background):
         self.name = 'Tradesman'
         character.cmdset.add(bgpowers.TradesmanCmdSet, permanent=True)
         for key, kwargs in TRADESMAN_SKILLS.items():
-            character.skills.add(key, **kwargs)
+            character.traits.add(key, **kwargs)

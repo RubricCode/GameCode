@@ -1,8 +1,8 @@
 """
 Primary module for guilds within Mercadia
 """
-
 from evennia.server.sessionhandler import SESSIONS
+from world.traitcalcs import abilitymodifiers
 from world.rulebook import roll_max
 from evennia.utils import fill
 from evennia import Command, CmdSet
@@ -90,13 +90,7 @@ all_guilds = ("Peon", "Peasant", "Servant", "Slave", "Conscript", "Commoner", "F
               "Templar", "SarthoarCleric", "Druid", "Harbinger", "Ranger", "Warrior", "Sorcerer", "Assassin", "Samurai",
               "Shaman", "Monk", "Merchant", "Artisan", "Trader")
 
-martial_guilds = ("Fighter", "Warrior", "Samurai")
-divine_guilds = ("Cleric", "SarthoarCleric", "Druid")
-agile_guilds = ("Thief", "Assassin", "Monk")
-trades_guilds = ("Merchant", "Artisan", "Trader")
-arcane_guilds = ("Mage", "Sorcerer", "Shaman")
 general_guilds = ("Peon", "Peasant", "Servant", "Slave", "Conscript", "Commoner")
-hybrid_guilds = ("Templar", "Ranger", "Harbinger")
 
 
 class GuildSign(Readable):
@@ -155,7 +149,6 @@ class CmdGuildJoin(Command):
                 caller.db.wallet = 0
                 caller.db.bank = 0
                 apply_guild(caller, guild)
-                initial_stats(caller)
 
             else:
                 caller.msg("Need message here")
@@ -194,68 +187,32 @@ def apply_guild(character, guild):
         guild = guild.name
 
     guild = load_guild(guild)
-
+    chp1 = roll_max(guild.health_roll)
+    chp2 = abilitymodifiers[character.traits.CON.value]
+    csp1 = roll_max('1d20')
+    csp2 = (abilitymodifiers[traits.INT.value] + abilitymodifiers[traits.WIS.value])
     character.db.guild = guild.name
     character.cmdset.add(guild.cmd_set_add, permanent=True)
+    character.traits.HP.base += (chp1 + chp2)
+    character.traits.SP.base += (csp1 + csp2)
+    character.db.faith = guild.faith
+    character.db.devotion = guild.devotion
+    character.traits.MAB.base = guild.bab[character.traits.LVL.value]
+    character.traits.RAB.base = guild.bab[character.traits.LVL.value]
+    character.traits.UAB.base = guild.bab[character.traits.LVL.value]
+    character.traits.FORT.base = guild.fsave[character.traits.LVL.value]
+    character.traits.REFL.base = guild.rsave[character.traits.LVL.value]
+    character.traits.WILL.base = guild.wsave[character.traits.LVL.value]
+
+    for key, kwargs in guild.skills.items():
+        if character.traits.key:
+            character.traits.key.base += 1
+        else:
+            character.traits.add(key, **kwargs)
 
     character.msg('You join the {} guild.'.format(guild.name))
     message = '{} joins the {} guild.'.format(character, guild.name)
     SESSIONS.announce_all(message)
-
-    for key, kwargs in guild.skills.items():
-        character.skills.add(key, **kwargs)
-
-    if guild in divine_guilds:
-        character.db.faith = guild.faith
-        character.db.devotion = guild.devotion
-
-
-def initial_stats(character):
-    guild = character.db.guild
-    load_guild(guild)
-
-    character.traits.HP.base += roll_max(guild.health_roll) * character.traits.LVL.actual
-    character.traits.SP.base += (character.traits.INT.actual + character.traits.WIS.actual / 2) \
-                                * character.traits.LVL.actual
-
-    if guild in melee_guilds:
-        bab = F_BAB
-        fsave = F_FSAVE
-        rsave = F_RSAVE
-        wsave = F_WSAVE
-    elif guild in divine_guilds:
-        bab = C_BAB
-        fsave = C_FSAVE
-        rsave = C_RSAVE
-        wsave = C_WSAVE
-    elif guild in agile_guilds:
-        bab = R_BAB
-        fsave = R_FSAVE
-        rsave = R_RSAVE
-        wsave = R_WSAVE
-    elif guild in arcane_guilds:
-        bab = M_BAB
-        fsave = M_FSAVE
-        rsave = M_RSAVE
-        wsave = M_WSAVE
-    elif guild in trades_guilds:
-        bab = T_BAB
-        fsave = T_FSAVE
-        rsave = T_RSAVE
-        wsave = T_WSAVE
-    elif guild in general_guilds:
-        bab = G_BAB
-        fsave = G_FSAVE
-        rsave = G_RSAVE
-        wsave = G_WSAVE
-
-    character.traits.MAB.base = bab[character.traits.LVL.actual]
-    character.traits.RAB.base = bab[character.traits.LVL.actual]
-    character.traits.UAB.base = bab[character.traits.LVL.actual]
-    character.traits.FORT.base = fsave[character.traits.LVL.actual]
-    character.traits.REFL.base = rsave[character.traits.LVL.actual]
-    character.traits.WILL.base = wsave[character.traits.LVL.actual]
-
 
 """
 def level_up():
@@ -271,6 +228,12 @@ class Guild(object):
         self.skills = {}
         self.health_roll = None
         self.cmd_set_add = None
+        self.faith = None
+        self.devotion = None
+        self.bab = None
+        self.fsave = None
+        self.rsave = None
+        self.wsave = None
 
 
 class Peon(Guild):
@@ -278,17 +241,18 @@ class Peon(Guild):
         super(Peon, self).__init__()
         self.name = 'Peon'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-
-
-#        for key, kwargs in self.skills.items():
-#            character.skills.add(key, **kwargs)
-#            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 class Peasant(Guild):
@@ -296,15 +260,18 @@ class Peasant(Guild):
         super(Peasant, self).__init__()
         self.name = 'Peasant'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 class Slave(Guild):
@@ -312,15 +279,18 @@ class Slave(Guild):
         super(Slave, self).__init__()
         self.name = 'Slave'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 class Servant(Guild):
@@ -328,15 +298,18 @@ class Servant(Guild):
         super(Servant, self).__init__()
         self.name = 'Servant'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 class Conscript(Guild):
@@ -344,15 +317,18 @@ class Conscript(Guild):
         super(Conscript, self).__init__()
         self.name = 'Conscript'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 class Commoner(Guild):
@@ -360,62 +336,67 @@ class Commoner(Guild):
         super(Commoner, self).__init__()
         self.name = 'Commoner'
         self.skills = {
-            'SRV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Survey'},
-            'MIN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Mining'},
-            'LUM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Lumbering'},
-            'SKN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Skinning'}}
+            'SRV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Survey', 'trait_type': 'static'},
+            'MIN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Mining', 'trait_type': 'static'},
+            'FOR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forestry', 'trait_type': 'static'},
+            'SKN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Skinning', 'trait_type': 'static'}}
         self.health_roll = '1d4'
         self.cmd_set_add = ResourceCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = G_BAB
+        self.fsave = G_FSAVE
+        self.rsave = G_RSAVE
+        self.wsave = G_WSAVE
 
 
 # Universal Guilds
 class Cleric(Guild):
     def __init__(self):
         super(Cleric, self).__init__()
-        self.name = 'Cleric of Helotyr'
+        self.name = 'Helotyr Cleric'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'SCR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Scrolls'},
-            'DIV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Divine Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'PRE': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Preach'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'SCR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Scrolls', 'trait_type': 'static'},
+            'DIV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Divne Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'PRE': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Preach', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
         self.faith = "Helotyr"
         self.devotion = "Cleric"
         self.cmd_set_add = helotyr.ClericCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = C_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 class SarthoarCleric(Guild):
     def __init__(self):
         super(SarthoarCleric, self).__init__()
-        self.name = 'Cleric of Sarthoar'
+        self.name = 'Sarthoar Cleric'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'SCR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Scrolls'},
-            'INF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Infernal Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'PRE': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Preach'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'SCR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Scrolls', 'trait_type': 'static'},
+            'INF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Infernal Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'PRE': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Preach', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
         self.faith = "Sarthoar"
         self.devotion = "Cleric"
         self.cmd_set_add = sarthoar.SarthoarCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = C_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 class Druid(Guild):
@@ -423,22 +404,23 @@ class Druid(Guild):
         super(Druid, self).__init__()
         self.name = 'Druid of Aphrea'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'SCR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Scrolls'},
-            'NAT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Nature Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'PRE': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Preach'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'SCR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Scrolls', 'trait_type': 'static'},
+            'NTR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Nature Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'PRE': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Preach', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
         self.faith = "Aphrea"
         self.devotion = "Cleric"
         self.cmd_set_add = druid.DruidCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = C_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 class Templar(Guild):
@@ -446,22 +428,23 @@ class Templar(Guild):
         super(Templar, self).__init__()
         self.name = 'Templar'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'DIV': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Divine Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'DIV': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Divne Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
-        self.faith = ""
+        self.faith = "Helotyr"
         self.devotion = "Paladin"
         self.cmd_set_add = templar.TemplarCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = F_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 class Harbinger(Guild):
@@ -469,22 +452,23 @@ class Harbinger(Guild):
         super(Harbinger, self).__init__()
         self.name = 'Harbinger'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'INF': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Infernal Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'INF': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Infernal Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
         self.faith = "Sarthoar"
         self.devotion = "Paladin"
         self.cmd_set_add = harbinger.HarbingerCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = F_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 class Ranger(Guild):
@@ -492,22 +476,23 @@ class Ranger(Guild):
         super(Ranger, self).__init__()
         self.name = 'Ranger'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'NAT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Nature Magic'},
-            'FAI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Faith'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'NTR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Nature Magic', 'trait_type': 'static'},
+            'FTH': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Faith', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d10'
         self.faith = "Aphrea"
         self.devotion = "Paladin"
         self.cmd_set_add = ranger.RangerCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.bab = F_BAB
+        self.fsave = C_FSAVE
+        self.rsave = C_RSAVE
+        self.wsave = C_WSAVE
 
 
 # Kingdom Guilds
@@ -516,20 +501,23 @@ class Fighter(Guild):
         super(Fighter, self).__init__()
         self.name = 'Fighter'
         self.skills = {
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
-            'SHD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Shields'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadership', 'trait_type': 'static'},
+            'SHD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Shields', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d12'
         self.cmd_set_add = fighter.FighterCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = F_BAB
+        self.fsave = F_FSAVE
+        self.rsave = F_RSAVE
+        self.wsave = F_WSAVE
 
 
 class Mage(Guild):
@@ -548,9 +536,12 @@ class Mage(Guild):
         }
         self.health_roll = '1d6'
         self.cmd_set_add = mage.MageCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = M_BAB
+        self.fsave = M_FSAVE
+        self.rsave = M_RSAVE
+        self.wsave = M_WSAVE
 
 
 class Merchant(Guild):
@@ -569,9 +560,12 @@ class Merchant(Guild):
         }
         self.health_roll = '1d6'
         self.cmd_set_add = merchant.MerchantCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = T_BAB
+        self.fsave = T_FSAVE
+        self.rsave = T_RSAVE
+        self.wsave = T_WSAVE
 
 
 class Thief(Guild):
@@ -579,20 +573,23 @@ class Thief(Guild):
         super(Thief, self).__init__()
         self.name = 'Thief'
         self.skills = {
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armors'},
-            'SNK': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Sneak'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
-            'HID': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Hide'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armors', 'trait_type': 'static'},
+            'SNK': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Sneak', 'trait_type': 'static'},
+            'HID': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Hide', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d8'
         self.cmd_set_add = thief.ThiefCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = R_BAB
+        self.fsave = R_FSAVE
+        self.rsave = R_RSAVE
+        self.wsave = R_WSAVE
 
 
 # Caliphate Guilds
@@ -601,20 +598,23 @@ class Warrior(Guild):
         super(Warrior, self).__init__()
         self.name = 'Warrior'
         self.skills = {
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
-            'SHD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Shields'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadership', 'trait_type': 'static'},
+            'SHD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Shields', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d12'
         self.cmd_set_add = warrior.WarriorCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = F_BAB
+        self.fsave = F_FSAVE
+        self.rsave = F_RSAVE
+        self.wsave = F_WSAVE
 
 
 class Sorcerer(Guild):
@@ -622,20 +622,23 @@ class Sorcerer(Guild):
         super(Sorcerer, self).__init__()
         self.name = 'Sorcerer'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'WND': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Wands'},
-            'SCR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Scrolls'},
-            'NEC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Necro Magic'},
-            'WRD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Wards'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'WND': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Wands', 'trait_type': 'static'},
+            'SCR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Scrolls', 'trait_type': 'static'},
+            'NEC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Necromancy Magic', 'trait_type': 'static'},
+            'WRD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Wards', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d6'
         self.cmd_set_add = sorcerer.SorcererCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = M_BAB
+        self.fsave = M_FSAVE
+        self.rsave = M_RSAVE
+        self.wsave = M_WSAVE
 
 
 class Trader(Guild):
@@ -643,20 +646,23 @@ class Trader(Guild):
         super(Trader, self).__init__()
         self.name = 'Trader'
         self.skills = {
-            'REP': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Repair'},
-            'FRG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Forge'},
-            'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
-            'ORG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Organization'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'NEG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Negotiation'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'REP': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Repair', 'trait_type': 'static'},
+            'FRG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forge', 'trait_type': 'static'},
+            'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadersip', 'trait_type': 'static'},
+            'ORG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Organization', 'trait_type': 'static'},
+            'NEG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Negotiation', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d6'
         self.cmd_set_add = trader.TraderCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = T_BAB
+        self.fsave = T_FSAVE
+        self.rsave = T_RSAVE
+        self.wsave = T_WSAVE
 
 
 class Assassin(Guild):
@@ -664,20 +670,23 @@ class Assassin(Guild):
         super(Assassin, self).__init__()
         self.name = 'Assassin'
         self.skills = {
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armors'},
-            'SNK': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Sneak'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
-            'HID': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Hide'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armors', 'trait_type': 'static'},
+            'SNK': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Sneak', 'trait_type': 'static'},
+            'HID': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Hide', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d8'
         self.cmd_set_add = assassin.AssassinCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = R_BAB
+        self.fsave = R_FSAVE
+        self.rsave = R_RSAVE
+        self.wsave = R_WSAVE
 
 
 # Empire Guilds
@@ -686,20 +695,23 @@ class Samurai(Guild):
         super(Samurai, self).__init__()
         self.name = 'Samurai'
         self.skills = {
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
-            'SHD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Shields'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armor'},
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadership', 'trait_type': 'static'},
+            'SHD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Shields', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armor', 'trait_type': 'static'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d12'
         self.cmd_set_add = samurai.SamuraiCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = F_BAB
+        self.fsave = F_FSAVE
+        self.rsave = F_RSAVE
+        self.wsave = F_WSAVE
 
 
 class Shaman(Guild):
@@ -707,20 +719,23 @@ class Shaman(Guild):
         super(Shaman, self).__init__()
         self.name = 'Shaman'
         self.skills = {
-            'SPC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spellcraft'},
-            'WND': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Wands'},
-            'SCR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Scrolls'},
-            'SPI': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Spirit Magic'},
-            'WRD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Wards'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'SPC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spellcraft', 'trait_type': 'static'},
+            'WND': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Wands', 'trait_type': 'static'},
+            'SCR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Scrolls', 'trait_type': 'static'},
+            'SPI': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Spirit Magic', 'trait_type': 'static'},
+            'WRD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Wards', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d6'
         self.cmd_set_add = shaman.ShamanCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = M_BAB
+        self.fsave = M_FSAVE
+        self.rsave = M_RSAVE
+        self.wsave = M_WSAVE
 
 
 class Artisan(Guild):
@@ -728,20 +743,23 @@ class Artisan(Guild):
         super(Artisan, self).__init__()
         self.name = 'Artisan'
         self.skills = {
-            'REP': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Repair'},
-            'FRG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Forge'},
-            'LDR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Leadership'},
-            'ORG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Organization'},
-            'KNO': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Knowledge'},
-            'NEG': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Negotiation'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
+            'REP': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Repair', 'trait_type': 'static'},
+            'FRG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Forge', 'trait_type': 'static'},
+            'LDR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Leadersip', 'trait_type': 'static'},
+            'ORG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Organization', 'trait_type': 'static'},
+            'NEG': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Negotiation', 'trait_type': 'static'},
+            'KNW': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Knowledge', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d6'
         self.cmd_set_add = artisan.ArtisanCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = T_BAB
+        self.fsave = T_FSAVE
+        self.rsave = T_RSAVE
+        self.wsave = T_WSAVE
 
 
 class Monk(Guild):
@@ -749,17 +767,20 @@ class Monk(Guild):
         super(Monk, self).__init__()
         self.name = 'Monk'
         self.skills = {
-            'MAR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Martial'},
-            'DOD': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dodge'},
-            'WPN': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Weapons'},
-            'ARM': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Armors'},
-            'SNK': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Sneak'},
-            'FOC': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Focus'},
-            'DIS': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Discipline'},
-            'HID': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Hide'},
+            'MAR': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Martial', 'trait_type': 'static'},
+            'DOD': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Dodge', 'trait_type': 'static'},
+            'WPN': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Weapons', 'trait_type': 'static'},
+            'ARM': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Armors', 'trait_type': 'static'},
+            'SNK': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Sneak', 'trait_type': 'static'},
+            'HID': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Hide', 'trait_type': 'static'},
+            'FOC': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Focus', 'trait_type': 'static'},
+            'DIS': {'base': 1, 'mod': 0, 'mult': 1, 'name': 'Discipline', 'trait_type': 'static'},
         }
         self.health_roll = '1d8'
         self.cmd_set_add = monk.MonkCmdSet
-        #        for key, kwargs in self.skills.items():
-        #            character.skills.add(key, **kwargs)
-        #            return
+        self.faith = ""
+        self.devotion = ""
+        self.bab = R_BAB
+        self.fsave = R_FSAVE
+        self.rsave = R_RSAVE
+        self.wsave = R_WSAVE

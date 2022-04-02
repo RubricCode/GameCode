@@ -91,17 +91,17 @@ class AccountCmdSet(default_cmds.AccountCmdSet):
         self.add(acct.CmdQuell())
 
         # Comm commands
-        self.remove(comms.CmdPage())
-        self.remove(comms.CmdChannels)
-        self.add(comm.CmdChannels)
-        self.add(comm.CmdCdestroy())
-        self.add(comm.CmdChannelCreate())
-        self.add(comm.CmdClock())
-        self.add(comm.CmdCBoot())
-        self.add(comm.CmdCemit())
-        self.add(comm.CmdCWho())
-        self.add(comm.CmdCdesc())
-        self.add(comm.CmdTell())
+        #self.remove(comms.CmdPage())
+        #self.remove(comms.CmdChannels)
+        #self.add(comm.CmdChannels)
+        #self.add(comm.CmdCdestroy())
+        #self.add(comm.CmdChannelCreate())
+        #self.add(comm.CmdClock())
+        #self.add(comm.CmdCBoot())
+        #self.add(comm.CmdCemit())
+        #self.add(comm.CmdCWho())
+        #self.add(comm.CmdCdesc())
+        #self.add(comm.CmdTell())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):

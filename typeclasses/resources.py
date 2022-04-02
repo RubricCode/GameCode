@@ -23,10 +23,10 @@ from evennia.prototypes.spawner import spawn
 from evennia import utils, CmdSet
 
 
-class ResourceNode(Object):
+class ResourceDeposit(Object):
 
     def at_object_creation(self):
-        super(ResourceNode, self).at_object_creation()
+        super(ResourceDeposit, self).at_object_creation()
         self.locks.add("get:false()")
         self.get_err_msg = ""
         self.db.amt = randint(3, 12)
@@ -39,6 +39,18 @@ class ResourceNode(Object):
             self.db.amt -= 1
         else:
             self.delete()
+
+
+class MineralDeposit(ResourceDeposit):
+
+    def at_object_creation(self):
+        super(MineralDeposit, self).at_object_creation()
+
+
+class LumberDeposit(ResourceDeposit):
+
+    def at_object_creation(self):
+        super(LumberDeposit, self).at_object_creation()
 
 
 class Resource(Object):
@@ -59,6 +71,24 @@ TUNDRA = {}
 
 
 class CmdSurvey(MuxCommand):
+    """
+       Spell Name: Survey
+          SP Cost: 20
+       Coins Cost: --
+           Syntax: survey
+      Skills used: survey
+
+      Description:
+
+        A simple spell that allows a character to survey the land
+      for usable material deposits.
+
+      """
+
+    key = "survey"
+    locks = "cmd:all()"
+    help_category = "commands"
+
     def func(self):
         caller = self.caller
         wilderness = caller.location.db.wilderness
@@ -86,11 +116,10 @@ class CmdSurvey(MuxCommand):
         caller = self.caller
         sk = caller.skills
         chance = randint(1, 100)
-        success = 10 + sk.SRV.actual
+        success = 10 + sk.SRV.value
         climate = caller.location.db.climate
 
         if chance <= success:
-            caller.msg("surveying the land you discover a")
             if "arid" in climate:
                 spawn(ARID)
             if "mediterranean" in climate:
@@ -104,8 +133,33 @@ class CmdSurvey(MuxCommand):
             if "tundra" in climate:
                 spawn(TUNDRA)
 
+            caller.msg_contents()
+            msg_contents(
+                "surveying the land you discover {deposit}.",
+                mapping=dict(deposit=vein),
+                exclude=caller)
+
 
 class CmdMine(MuxCommand):
+    """
+       Spell Name: Mine
+          SP Cost: 10
+       Coins Cost: --
+           Syntax: mine
+      Skills used: mining
+
+      Description:
+
+        A simple spell that allows a a character to mine minerals
+      with an equipped mining pick from surveyed surface deposits
+      or mines.
+
+      """
+
+    key = "mine"
+    locks = "cmd:all()"
+    help_category = "commands"
+
     def func(self):
         caller = self.caller
         tr = caller.traits
@@ -141,6 +195,24 @@ class CmdMine(MuxCommand):
 
 
 class CmdSkin(MuxCommand):
+    """
+       Spell Name: Forge
+          SP Cost: 10
+       Coins Cost: --
+           Syntax: skin
+      Skills used: skinning
+
+      Description:
+
+        A simple spell that allows a a character to skin creatures
+      with an equipped skinning knife from creature corpses.
+
+      """
+
+    key = "skin"
+    locks = "cmd:all()"
+    help_category = "commands"
+
     def func(self):
         caller = self.caller
         tr = caller.traits
@@ -169,6 +241,24 @@ class CmdSkin(MuxCommand):
 
 
 class CmdChop(MuxCommand):
+    """
+       Spell Name: Chop
+          SP Cost: 10
+       Coins Cost: --
+           Syntax: chop
+      Skills used: forestry
+
+      Description:
+
+        A simple spell that allows a a character to chop trees
+      with an equipped lumber axe from surveyed trees.
+
+      """
+
+    key = "chop"
+    locks = "cmd:all()"
+    help_category = "commands"
+
     def func(self):
         caller = self.caller
         tr = caller.traits

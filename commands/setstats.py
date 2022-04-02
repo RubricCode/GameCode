@@ -39,8 +39,8 @@ class CmdSetStats(MuxCommand):
                 "wisdom charisma\n\n"
                 "You will only be able to roll up to 25 times, so when you see a decent "
                 "roll, you should accept it.", "You may only roll your stats once.")
-        if char.traits.STR.actual > 5 or char.traits.INT.actual > 5 or char.traits.WIS.actual > 5 or \
-           char.traits.DEX.actual > 5 or char.traits.CON > 5 or char.traits.CHA.actual > 5:
+        if char.traits.STR.value > 5 or char.traits.INT.value > 5 or char.traits.WIS.value > 5 or \
+           char.traits.DEX.value > 5 or char.traits.CON.value > 5 or char.traits.CHA.value > 5:
             return self.caller.msg(mesg[1])
         else:
             self.caller.msg(mesg[0])
@@ -57,7 +57,7 @@ def menu_start(caller, raw_string):
     options = ()
     restart = "x" in raw_string  # Denotes restarting the stat selection process
     choice = menu.choice if menu.choice and not restart else []
-    remain = menu.stats.keys() if restart or not menu.remaining_choices else menu.remaining_choices
+    remain = list(menu.stats.keys()) if restart or not menu.remaining_choices else menu.remaining_choices
     start_text = "Choose stat order high to low from the following:\n"
     if raw_string.strip().isdigit() and 1 <= int(raw_string.strip()) <= len(remain):
         # If a stats choice is made, ( 1 through highest choice, up to 6 )

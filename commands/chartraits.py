@@ -34,6 +34,11 @@ class CmdSheet(MuxCommand):
         """
         Handle displaying status.
         """
+        # Check to see if the char is in creation
+        if self.caller.db.is_in_creation:
+            self.caller.msg("This command is disabled in Character Creation.")
+            return
+
         # make sure the char has traits - only possible for superuser
         if len(self.caller.traits.all) == 0:
             return
@@ -47,26 +52,26 @@ class CmdSheet(MuxCommand):
             'D': self.caller.db.guild,
             'E': self.caller.db.clan,
             'F': self.caller.db.title,
-            'G': tr.LVL.actual,
+            'G': tr.LVL.value,
             'H': self.caller.db.faith,
             'I': self.caller.db.devotion,
             'J': self.caller.db.nation,
             'K': self.caller.db.background,
-            'L': tr.STR.actual,
-            'M': tr.DEX.actual,
-            'N': tr.CON.actual,
-            'O': tr.INT.actual,
-            'P': tr.WIS.actual,
-            'Q': tr.CHA.actual,
-            'R': tr.XP.actual,
-            'S': tr.ENC.actual,
+            'L': tr.STR.value,
+            'M': tr.DEX.value,
+            'N': tr.CON.value,
+            'O': tr.INT.value,
+            'P': tr.WIS.value,
+            'Q': tr.CHA.value,
+            'R': int(tr.XP.value),
+            'S': tr.ENC.value,
             'T': tr.ENC.max,
-            'U': tr.HP.actual,
-            'V': tr.HP.max,
-            'W': tr.SP.actual,
-            'X': tr.SP.max,
-            'Y': tr.EP.actual,
-            'Z': tr.EP.max,
+            'U': tr.HP.current,
+            'V': int(tr.HP.max),
+            'W': tr.SP.current,
+            'X': int(tr.SP.max),
+            'Y': tr.EP.current,
+            'Z': int(tr.EP.max),
         }
         form.map({k: self._format_trait_val(v) for k, v in fields.items()})
 
@@ -115,9 +120,15 @@ class CmdVitals(MuxCommand):
     locks = "cmd:all()"
 
     def func(self):
+
+        # Check to see if the char is in creation
+        if self.caller.db.is_in_creation:
+            self.caller.msg("This command is disabled in Character Creation.")
+            return
+
         tr = self.caller.traits
-        self.caller.msg("|CHP: %s/%s SP: %s/%s EP: %s/%s" % (tr.HP.actual, tr.HP.max, tr.SP.actual,
-                                                             tr.SP.max, tr.EP.actual, tr.EP.max))
+        self.caller.msg("|CHP: %s/%s SP: %s/%s EP: %s/%s" % (tr.HP.current, int(tr.HP.max), tr.SP.current,
+                                                             int(tr.SP.max), tr.EP.current, int(tr.EP.max)))
 
 
 class CmdLevel(MuxCommand):
@@ -137,11 +148,16 @@ class CmdLevel(MuxCommand):
         wallet = self.caller.db.wallet
         total = bank + wallet
         tr = self.caller.traits
-        lvl = str(tr.LVL.actual + 1)
+        lvl = str(tr.LVL.value + 1)
         xp1 = rulebook.LEVEL[lvl]['xp']
         coin1 = rulebook.LEVEL[lvl]['coins']
-        xp2 = rulebook.LEVEL[lvl]['xp'] - tr.XP.actual
+        xp2 = rulebook.LEVEL[lvl]['xp'] - int(tr.XP.value)
         coin2 = rulebook.LEVEL[lvl]['coins'] - total
+
+        # Check to see if the char is in creation
+        if self.caller.db.is_in_creation:
+            self.caller.msg("This command is disabled in Character Creation.")
+            return
 
         if xp2 <= 0 and coin2 <= 0:
             self.caller.msg("|yYou Are Ready To Advance!|/"

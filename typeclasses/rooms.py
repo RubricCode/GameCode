@@ -70,14 +70,14 @@ Installation/testing:
 """
 from __future__ import division
 from evennia import utils
-from evennia.contrib.extended_room import ExtendedRoom
-from evennia.contrib.rpsystem import ContribRPRoom
+from evennia.contrib.grid.extended_room import ExtendedRoom
+from evennia.contrib.rpg.rpsystem import ContribRPRoom
 from evennia.prototypes.spawner import spawn
 from world.economy import transfer_funds, InsufficientFunds, value_to_coin, format_coin
 
 
 class Room(ExtendedRoom, ContribRPRoom):
-    """Base Mercadia Room typeclass.
+    """Base Game Room typeclass.
     Properties:
         terrain (str): The terrain type for this room
         mv_cost (int): (read-only) The movement cost to enter the room; based on

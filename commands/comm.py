@@ -10,7 +10,7 @@ from django.conf import settings
 from evennia.comms.models import ChannelDB, Msg
 from evennia.accounts.models import AccountDB
 from evennia.accounts import bots
-from evennia.comms.channelhandler import CHANNELHANDLER
+#from evennia.comms.channelhandler import CHANNELHANDLER
 from evennia.locks.lockhandler import LockException
 from evennia.utils import create, utils, evtable
 from evennia.utils.utils import make_iter, class_from_module

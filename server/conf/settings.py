@@ -34,6 +34,7 @@ from evennia.settings_default import *
 # This is the name of your game. Make it catchy!
 SERVERNAME = "Ayacia"
 
+
 ######################################################################
 # Game Time setup
 ######################################################################
@@ -124,6 +125,15 @@ SEARCH_MULTIMATCH_REGEX = r"(?P<name>.*) (?P<number>[0-9]+)"
 MULTISESSION_MODE = 0
 # The maximum number of characters allowed by the default ooc char-creation command
 MAX_NR_CHARACTERS = 1
+
+# The default home location used for all objects. This is used as a
+# fallback if an object's normal home location is deleted. Default
+# is Limbo (#2).
+DEFAULT_HOME = "#2"
+# The start position for new characters. Default is Limbo (#2).
+#  MULTISESSION_MODE = 0, 1 - used by default unloggedin create command
+#  MULTISESSION_MODE = 2, 3 - used by default character_create command
+START_LOCATION = "#35"
 
 ######################################################################
 # Settings given in secret_settings.py override those in this file.

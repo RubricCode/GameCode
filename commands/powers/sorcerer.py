@@ -13,7 +13,7 @@ class SorcererCmdSet(CmdSet):
     """
     This stores the input command
     """
-    key = "commands"
+    key = "Guild Powers"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -79,7 +79,7 @@ class CmdCursedBone(MuxCommand):
 
     key = "cursedbone"
     locks = "cmd:attr_ge(level, 1)"
-    help_category = "commands"
+    help_category = "Guild Powers"
 
     def func(self):
         caller = self.caller

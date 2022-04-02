@@ -35,7 +35,7 @@ Module Functions
     """
 
 from evennia import Command
-from world.traitcalcs import abilitymodifiers
+from world.traitcalcs import calculate_secondary_traits
 
 
 class CmdRace(Command):
@@ -132,18 +132,7 @@ def apply_race(character, race):
     for trait, bonus in race.bonuses.items():
         character.traits[trait].mod += bonus
 
-    character.traits.HP.mod = abilitymodifiers[character.traits.CON.actual - 1]
-    character.traits.SP.mod = abilitymodifiers[character.traits.INT.actual - 1] \
-                              + abilitymodifiers[character.traits.WIS.actual - 1]
-    character.traits.FORT.mod = abilitymodifiers[character.traits.CON.actual - 1]
-    character.traits.REFL.mod = abilitymodifiers[character.traits.DEX.actual - 1]
-    character.traits.WILL.mod = abilitymodifiers[character.traits.WIS.actual - 1]
-    character.traits.MAB.mod = abilitymodifiers[character.traits.STR.actual - 1]
-    character.traits.RAB.mod = abilitymodifiers[character.traits.DEX.actual - 1]
-    character.traits.UAB.mod = abilitymodifiers[character.traits.DEX.actual - 1]
-    character.traits.PDEF.mod = abilitymodifiers[character.traits.DEX.actual - 1]
-    character.traits.MDEF.mod = abilitymodifiers[character.traits.INT.actual - 1]
-    character.traits.ENC.max = character.traits.STR.lift_factor * character.traits.STR.actual
+    calculate_secondary_traits(character.traits)
 
 
 class Race(object):

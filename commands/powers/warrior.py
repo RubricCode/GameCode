@@ -13,7 +13,7 @@ class WarriorCmdSet(CmdSet):
     """
     This stores the input command
     """
-    key = "commands"
+    key = "Guild Powers"
 
     def at_cmdset_creation(self):
         """called once at creation"""

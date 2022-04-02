@@ -21,7 +21,7 @@ class CmdUrchin(MuxCommand):
 
     key = "willpower"
     locks = "cmd:attr(background, 'Urchin')"
-    help_category = "commands"
+    help_category = "powers"
 
     def func(self):
         caller = self.caller
@@ -31,16 +31,15 @@ class CmdUrchin(MuxCommand):
             mess = "You cannot cast this again so soon"
             caller.msg(mess)
             return
-        tr.SP.current -= (10 + tr.LVL.actual)
+        tr.SP.current -= (10 + tr.LVL.value)
         utils.delay(1, callback=self.fortify_will)
 
     def fortify_will(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess1 = '|m.You focus your mind on survival|n '
         caller.msg(mess1)
-        tr.WILL.mod += (sk.FOC.current / 5)
+        tr.WILL.mod += (tr.FOC.value / 5)
         # if the spell was successfully cast, store the casting time
         caller.db.willpower_lastcast = time.time()
         utils.delay(2 * 60, callback=self.unfortify_will)
@@ -48,17 +47,16 @@ class CmdUrchin(MuxCommand):
     def unfortify_will(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess2 = '|mYou relax your focus.|n '
         caller.msg(mess2)
-        tr.WILL.mod -= (sk.FOC.current / 5)
+        tr.WILL.mod -= (tr.FOC.value / 5)
 
 
 class UrchinCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -82,7 +80,7 @@ class CmdNoble(MuxCommand):
 
     key = "presence"
     locks = "cmd:attr(background, Noble)"
-    help_category = "commands"
+    help_category = "powers"
 
     def func(self):
         caller = self.caller
@@ -92,34 +90,32 @@ class CmdNoble(MuxCommand):
             mess = "You cannot cast this again so soon"
             caller.msg(mess)
             return
-        tr.SP.current -= (10 + tr.LVL.actual)
+        tr.SP.current -= (10 + tr.LVL.value)
         utils.delay(1, callback=self.fortify_defense)
 
     def fortify_defense(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess1 = '|mYou stand up straight exhibiting an aura of leadership.|n '
         caller.msg(mess1)
-        tr.MDEF.mod += (sk.LDR.current / 5)
+        tr.MDEF.mod += (tr.LDR.value / 5)
         # if the spell was successfully cast, store the casting time
         caller.db.presence_lastcast = time.time()
         utils.delay(2 * 60, callback=self.unfortify_defense)
 
     def unfortify_defense(self):
         tr = self.caller.traits
-        sk = self.caller.skills
         caller = self.caller
         mess2 = '|mYour aura of leadership fades as you relax.|n '
         caller.msg(mess2)
-        tr.MDEF.mod -= (sk.LDR.current / 5)
+        tr.MDEF.mod -= (tr.LDR.value / 5)
 
 
 class NobleCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -127,7 +123,7 @@ class NobleCmdSet(CmdSet):
 
 
 class CmdNomad(MuxCommand):
-        """
+    """
          Spell Name: Nomad's Fortitude  
             MP Cost: 10 + Level
              Syntax: fortitude
@@ -142,47 +138,44 @@ class CmdNomad(MuxCommand):
         this is accomplished  is based upon the martial skill.
         """
 
-        key = "fortitude"
-        locks = "cmd:attr(background, 'Nomad')"
-        help_category = "commands"
+    key = "fortitude"
+    locks = "cmd:attr(background, 'Nomad')"
+    help_category = "commands"
 
-        def func(self):
-            caller = self.caller
-            tr = self.caller.traits
-            sk = self.caller.skills
-            lastcast = caller.db.fortitude_lastcast
-            if lastcast and time.time() - lastcast < 2 * 60:
-                mess = "You cannot cast this again so soon"
-                caller.msg(mess)
-                return
-            tr.SP.current -= (10 + tr.LVL.actual)
-            utils.delay(1, callback=self.fortify_fortitude)
+    def func(self):
+        caller = self.caller
+        tr = self.caller.traits
+        lastcast = caller.db.fortitude_lastcast
+        if lastcast and time.time() - lastcast < 2 * 60:
+            mess = "You cannot cast this again so soon"
+            caller.msg(mess)
+            return
+        tr.SP.current -= (10 + tr.LVL.value)
+        utils.delay(1, callback=self.fortify_fortitude)
 
-        def fortify_fortitude(self):
-            caller = self.caller
-            tr = self.caller.traits
-            sk = self.caller.skills
-            mess1 = '|mYou take on a defensive stance.|n '
-            caller.msg(mess1)
-            tr.FORT.mod += (sk.MAR.current / 5)
-            # if the spell was successfully cast, store the casting time
-            caller.db.fortitude_lastcast = time.time()
-            utils.delay(2 * 60, callback=self.unfortify_fortitude)
+    def fortify_fortitude(self):
+        caller = self.caller
+        tr = self.caller.traits
+        mess1 = '|mYou take on a defensive stance.|n '
+        caller.msg(mess1)
+        tr.FORT.mod += (tr.MAR.value / 5)
+        # if the spell was successfully cast, store the casting time
+        caller.db.fortitude_lastcast = time.time()
+        utils.delay(2 * 60, callback=self.unfortify_fortitude)
 
-        def unfortify_fortitude(self):
-            caller = self.caller
-            tr = self.caller.traits
-            sk = self.caller.skills
-            mess2 = '|mYou relax your defenses.|n '
-            caller.msg(mess2)
-            tr.FORT.mod -= (sk.MAR.current / 5)
+    def unfortify_fortitude(self):
+        caller = self.caller
+        tr = self.caller.traits
+        mess2 = '|mYou relax your defenses.|n '
+        caller.msg(mess2)
+        tr.FORT.mod -= (tr.MAR.value / 5)
 
 
 class NomadCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -217,16 +210,15 @@ class CmdGypsy(MuxCommand):
             mess = "You cannot cast this again so soon"
             caller.msg(mess)
             return
-        tr.SP.current -= (10 + tr.LVL.actual)
+        tr.SP.current -= (10 + tr.LVL.value)
         utils.delay(1, callback=self.fortify_reflex)
 
     def fortify_reflex(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess1 = '|mYou move lithely as a dancer.|n '
         caller.msg(mess1)
-        tr.REFL.mod += (sk.DOD.current / 5)
+        tr.REFL.mod += (tr.DOD.value / 5)
         # if the spell was successfully cast, store the casting time
         caller.db.reflex_lastcast = time.time()
         utils.delay(2 * 60, callback=self.unfortify_reflex)
@@ -234,17 +226,16 @@ class CmdGypsy(MuxCommand):
     def unfortify_reflex(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess2 = '|mYou no longer move about lithely.|n '
         caller.msg(mess2)
-        tr.REFL.mod -= (sk.DOD.current / 5)
+        tr.REFL.mod -= (tr.DOD.value / 5)
 
 
 class GypsyCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -276,16 +267,16 @@ class CmdFarmer(MuxCommand):
             mess = "You cannot cast this again so soon"
             caller.msg(mess)
             return
-        tr.SP.current -= (10 + tr.LVL.actual)
+        tr.SP.current -= (10 + tr.LVL.value)
         utils.delay(1, callback=self.harvest)
 
     def harvest(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
+
         mess1 = '|mDrawing upon your skill, you create a vegetable.|n '
         caller.msg(mess1)
-        tr.HP.current += (10 + (sk.ORG.current / 5))
+        tr.HP.current += (10 + (tr.ORG.value / 5))
         # if the spell was successfully cast, store the casting time
         caller.db.harvest_lastcast = time.time()
 
@@ -294,7 +285,7 @@ class FarmerCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -327,16 +318,15 @@ class CmdTradesman(MuxCommand):
             mess = "You cannot cast this again so soon"
             caller.msg(mess)
             return
-        tr.SP.current -= (10 + tr.LVL.actual)
+        tr.SP.current -= (10 + tr.LVL.value)
         utils.delay(1, callback=self.fortify_armor)
 
     def fortify_armor(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess1 = '|mYou take out a vial of oil and fortify your armor.|n '
         caller.msg(mess1)
-        tr.PDEF.mod += (sk.FRG.current / 5)
+        tr.PDEF.mod += (tr.FRG.current / 5)
         # if the spell was successfully cast, store the casting time
         caller.db.fortify_lastcast = time.time()
         utils.delay(2 * 60, callback=self.unfortify_armor)
@@ -344,17 +334,16 @@ class CmdTradesman(MuxCommand):
     def unfortify_armor(self):
         caller = self.caller
         tr = self.caller.traits
-        sk = self.caller.skills
         mess2 = '|mThe fortification wears off of your armor.|n '
         caller.msg(mess2)
-        tr.PDEF.mod -= (sk.FRG.current / 5)
+        tr.PDEF.mod -= (tr.FRG.current / 5)
 
 
 class TradesmanCmdSet(CmdSet):
     """
        This stores the input command
        """
-    key = "commands"
+    key = "General"
 
     def at_cmdset_creation(self):
         """called once at creation"""

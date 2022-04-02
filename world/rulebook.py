@@ -4,6 +4,7 @@ from math import floor
 from collections import defaultdict
 from evennia.utils import utils, make_iter
 
+
 LEVEL = {
     '1': {'xp': 1, 'coins': 0},
     '2': {'xp': 1, 'coins': 0},
@@ -88,7 +89,7 @@ SKILLLVL = {
     '48': {'experience': 1, 'coins': 0},
     '49': {'experience': 1, 'coins': 0},
     '50': {'experience': 1, 'coins': 0},
-    }
+}
 
 
 class DiceRollError(Exception):
@@ -96,6 +97,7 @@ class DiceRollError(Exception):
     Args:
         msg (str): a descriptive error message
     """
+
     def __init__(self, msg):
         self.msg = msg
 
@@ -156,7 +158,6 @@ def d_roll(xdyz, total=True):
 
 
 def parse_damage(value):
-
     if value >= 40:
         return ""
     elif value >= 35:
@@ -205,8 +206,9 @@ def parse_health(target):
     else:
         return '|[300Dead|n'
 
+
 def item_dura(item):
-    current =  item.db.current
+    current = item.db.current
     max_durability = item.db.durability
 
     if max_durability > 0:

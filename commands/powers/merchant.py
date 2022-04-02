@@ -16,7 +16,7 @@ class MerchantCmdSet(CmdSet):
     """
     This stores the input command
     """
-    key = "commands"
+    key = "Guild Powers"
 
     def at_cmdset_creation(self):
         """called once at creation"""
@@ -57,7 +57,7 @@ class CmdForge(MuxCommand):
 
     key = "forge"
     locks = "cmd:all()"
-    help_category = "commands"
+    help_category = "Guild Powers"
 
     def func(self):
         args = self.args
@@ -286,7 +286,7 @@ class CmdSmelt(MuxCommand):
 
     key = "smelt"
     locks = "cmd:all()"
-    help_category = "commands"
+    help_category = "Guild Powers"
 
     def func(self):
         material = self.args
