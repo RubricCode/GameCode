@@ -129,7 +129,7 @@ MAX_NR_CHARACTERS = 1
 # The default home location used for all objects. This is used as a
 # fallback if an object's normal home location is deleted. Default
 # is Limbo (#2).
-DEFAULT_HOME = "#2"
+DEFAULT_HOME = "#35"
 # The start position for new characters. Default is Limbo (#2).
 #  MULTISESSION_MODE = 0, 1 - used by default unloggedin create command
 #  MULTISESSION_MODE = 2, 3 - used by default character_create command
